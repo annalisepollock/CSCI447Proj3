@@ -36,6 +36,10 @@ class Layer:
             values[i] = 1 / (1 + np.exp(-values[i]))
         return values
 
+    def softmaxActivation(self, values):
+        for i in range(len(values)):
+            values[i] = np.exp(values[i]) / np.sum(np.exp(values))
+        return values
     
     #takes a list of numpy arrays which are the updates 
     def forwardPass(self, nodeUpdates):
@@ -74,6 +78,10 @@ class Layer:
         elif self.classificationType == "classification":
             classifications = np.empty(len(self.activations[0]), dtype=object)
             for i in range(len(classifications)):
+                self.activations[:, i] = self.softmaxActivation(self.activations[:, i])
+                print("Activations after softmax: ")
+                print(self.activations[:, i])
+                print()
                 classifications[i] = self.classes[np.argmax(self.activations[:, i])]
         return classifications
     
