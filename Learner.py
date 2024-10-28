@@ -18,6 +18,9 @@ class Learner:
     
     def setNetwork(self, network): # remove later after testing
         self.network = network
+    
+    def setTestClass(self, testClass):
+        self.testClass = testClass
 
     def tuneData(self):
         pass

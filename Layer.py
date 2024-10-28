@@ -35,6 +35,7 @@ class Layer:
         for i in range(len(values)):
             values[i] = 1 / (1 + np.exp(-values[i]))
         return values
+
     
     #takes a list of numpy arrays which are the updates 
     def forwardPass(self, nodeUpdates):

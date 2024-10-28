@@ -32,7 +32,10 @@ def main():
     testLearner.setNetwork(test)
 
     print("RUN ONE FORWARD PASS...")
-    testData = df.sample(n=2).drop(columns=['class'])
+    testData = df.sample(n=2)
+    testClasses = testData["class"]
+    testData = testData.drop(columns=["class"])
+    testLearner.setTestClass(testClasses)
     print("Test Data: ")
     print(testData)
     print()
