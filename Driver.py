@@ -4,6 +4,7 @@ import pandas as pd
 
 def main():
 
+    print("CREATE TEST DF...")
     data = {
     'feature1': [1, 2, 3, 4, 2, 3, 4, 5, 1, 2, 3, 4],
     'feature2': [5, 6, 7, 8, 6, 7, 8, 9, 5, 6, 7, 8],
@@ -11,7 +12,6 @@ def main():
     'feature4': [13, 14, 15, 16, 14, 15, 16, 17, 13, 14, 15, 16],
     'class': ['Red', 'Blue', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Red']
     }
-
 
     # Create DataFrame
     df = pd.DataFrame(data)
@@ -21,9 +21,17 @@ def main():
     classes = 3
     classesList = ["Red", "Blue", "Green"]
     batchSize = 2
+
+    print("CREATE TEST NETWORK...")
     test = Network.Network(hiddenLayers, neuronsPerLayer, features, classes, classesList, "classification", batchSize)
     test.printNetwork()
     print()
+
+    print("CREATE TEST LEARNER, ADD TEST NETWORK...")
+    testLearner = Learner.Learner(df, "classification", "class")
+    testLearner.setNetwork(test)
+
+    print("RUN ONE FORWARD PASS...")
     testData = df.sample(n=2).drop(columns=['class'])
     print("Test Data: ")
     print(testData)
@@ -31,5 +39,7 @@ def main():
     output = test.forwardPass(testData)
     print("Classified As:")
     print(output)
+
+    print()
 
 main()

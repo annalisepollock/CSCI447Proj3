@@ -2,7 +2,7 @@ import Network
 
 class Learner: 
 
-    def _init_(self, data, classificationType, classPlace):
+    def __init__ (self, data, classificationType, classPlace):
         self.data = data
         self.classificationType = classificationType
         self.testingData = self.data.sample(frac=0.1)
@@ -14,21 +14,27 @@ class Learner:
         self.batchSize = 4
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
-        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classes, self.classificationType)
+        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classes, self.classificationType, self.batchSize)
     
-    def tuneData():
+    def setNetwork(self, network): # remove later after testing
+        self.network = network
+
+    def tuneData(self):
         pass
 
-    def crossValidate():
+    def crossValidate(self):
         pass    
-    def train():
+    def train(self):
         pass    
-    def test():
+    def test(self):
         pass
-    def forwardPass(batch):
+    def forwardPass(self, batch):
         pass
 
-    def backwardPass():
-        pass
-    def gradientDescent():
+    def backwardPass(self):
+        test = self.network
+        print("BACKWARD PASS TESTING: ")
+        test.printNetwork()
+
+    def gradientDescent(self):
         pass
