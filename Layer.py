@@ -4,8 +4,6 @@ from Network import LayerName
 class Layer:
     def __init__ (self, size, nextSize, name, batchSize, classes = [], classificationType=""):
         self.weights = np.random.uniform(-0.1, 0.1, (nextSize, size))
-        print("Size: " + str(size))
-        print("batch Size: " + str(batchSize))
         self.activations = np.empty((size, batchSize))
         self.name = name
         self.classificationType = classificationType
