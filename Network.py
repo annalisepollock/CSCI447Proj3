@@ -1,4 +1,5 @@
 from enum import Enum
+import numpy as np
 
 class LayerName(Enum): 
     Input = 0
@@ -8,22 +9,22 @@ class LayerName(Enum):
 import Layer 
 
 class Network:
-    def __init__ (self, hiddenLayers, neuronsPerLayer, inputSize, outputSize, classes):
+    def __init__ (self, hiddenLayers, neuronsPerLayer, inputSize, outputSize, classes, classificationType, batchSize):
         self.layers = []
         #create input layer
-        inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input)
+        inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
         self.layers.append(inputLayer)
 
         #create hidden layers
         for i in range(hiddenLayers):
             if(i == hiddenLayers - 1):
-                hiddenLayer = Layer.Layer(neuronsPerLayer, outputSize, LayerName.Hidden)
+                hiddenLayer = Layer.Layer(neuronsPerLayer, outputSize, LayerName.Hidden, batchSize)
             else:
-                hiddenLayer = Layer.Layer(neuronsPerLayer, neuronsPerLayer, LayerName.Hidden)
+                hiddenLayer = Layer.Layer(neuronsPerLayer, neuronsPerLayer, LayerName.Hidden, batchSize)
             self.layers.append(hiddenLayer)
         
         #create output layer
-        outputLayer = Layer.Layer(outputSize, 0, LayerName.Output, classes)
+        outputLayer = Layer.Layer(outputSize, 0, LayerName.Output, batchSize, classes, classificationType)
         self.layers.append(outputLayer)
 
         #connect layers
@@ -34,3 +35,17 @@ class Network:
     def printNetwork(self): 
         for layer in self.layers:
             layer.printLayer()
+    
+    def forwardPass(self, batch):
+        # split batch into features
+        featureNames = batch.columns
+        features = []
+        for feature in featureNames:
+            features.append(batch[feature].values)
+        features = np.array(features)
+        print("Features: ")
+        print(features)
+        print()
+        for layer in self.layers:
+            features = layer.forwardPass(features)
+        return features

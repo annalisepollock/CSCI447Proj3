@@ -15,16 +15,21 @@ def main():
 
     # Create DataFrame
     df = pd.DataFrame(data)
-    print(df.unique('class'))
-
-    """
     hiddenLayers = 3
     neuronsPerLayer = 5
     features = 4 
     classes = 3
     classesList = ["Red", "Blue", "Green"]
-    test = Network.Network(hiddenLayers, neuronsPerLayer, features, classes, classesList)
+    batchSize = 2
+    test = Network.Network(hiddenLayers, neuronsPerLayer, features, classes, classesList, "classification", batchSize)
     test.printNetwork()
-    """
+    print()
+    testData = df.sample(n=2).drop(columns=['class'])
+    print("Test Data: ")
+    print(testData)
+    print()
+    output = test.forwardPass(testData)
+    print("Classified As:")
+    print(output)
 
 main()

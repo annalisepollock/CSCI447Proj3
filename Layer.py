@@ -2,10 +2,13 @@ import numpy as np
 from Network import LayerName
 
 class Layer:
-    def __init__ (self, size, nextSize, name, classes = []):
+    def __init__ (self, size, nextSize, name, batchSize, classes = [], classificationType=""):
         self.weights = np.random.uniform(-0.1, 0.1, (nextSize, size))
-        self.activations = np.zeros(size)
+        print("Size: " + str(size))
+        print("batch Size: " + str(batchSize))
+        self.activations = np.empty((size, batchSize))
         self.name = name
+        self.classificationType = classificationType
         if(name == LayerName.Output):
             self.classes = classes
     
@@ -29,3 +32,49 @@ class Layer:
         if(self.name == LayerName.Output):
             print("Classes: " + str(self.classes))
         print("\n")
+
+    def sigmoid(self, values):
+        for i in range(len(values)):
+            values[i] = 1 / (1 + np.exp(-values[i]))
+        return values
+    
+    #takes a list of numpy arrays which are the updates 
+    def forwardPass(self, nodeUpdates):
+        #update activation values 
+        print("Layer: " + str(self.name.name))
+        print("Node Updates: ")
+        print(nodeUpdates)
+        print()
+        for i in range(len(nodeUpdates)):
+            self.activations[i] = nodeUpdates[i]
+
+
+        if(self.name == LayerName.Output):
+            newActivations = self.calculateOutput()
+        #calculate values for the next layer
+        elif(self.next.name == LayerName.Output):
+            newActivations = np.array(np.dot(self.weights, self.activations))
+            print("Next Level Activations: ")
+            print(newActivations)
+            print()
+        else:
+            newActivations = np.array(np.dot(self.weights, self.activations))
+            print("Next Level Activations before Sigmoid: ")
+            print(newActivations)
+            print()
+            newActivations = self.sigmoid(newActivations)
+            print("Next Level Activations: ")
+            print(newActivations)
+            print()
+        
+        return newActivations
+    
+    def calculateOutput(self):
+        if self.classificationType == "regression":
+            return self.activations
+        elif self.classificationType == "classification":
+            classifications = np.empty(len(self.activations[0]), dtype=object)
+            for i in range(len(classifications)):
+                classifications[i] = self.classes[np.argmax(self.activations[:, i])]
+        return classifications
+    
