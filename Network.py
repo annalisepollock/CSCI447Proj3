@@ -13,7 +13,7 @@ class Network:
         self.layers = []
         #create input layer
         self.inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
-        self.layers.append(inputLayer)
+        self.layers.append(self.inputLayer)
 
         #create hidden layers
         for i in range(hiddenLayers):
