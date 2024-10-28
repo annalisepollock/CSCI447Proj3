@@ -12,7 +12,7 @@ class Network:
     def __init__ (self, hiddenLayers, neuronsPerLayer, inputSize, outputSize, classes, classificationType, batchSize):
         self.layers = []
         #create input layer
-        inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
+        self.inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
         self.layers.append(inputLayer)
 
         #create hidden layers
@@ -24,15 +24,21 @@ class Network:
             self.layers.append(hiddenLayer)
         
         #create output layer
-        outputLayer = Layer.Layer(outputSize, 0, LayerName.Output, batchSize, classes, classificationType)
-        self.layers.append(outputLayer)
+        self.outputLayer = Layer.Layer(outputSize, 0, LayerName.Output, batchSize, classes, classificationType)
+        self.layers.append(self.outputLayer)
 
         #connect layers
         for i in range(len(self.layers) - 1):
             self.layers[i].setNextLayer(self.layers[i + 1])
             self.layers[i + 1].setPreviousLayer(self.layers[i])
     
-    def printNetwork(self): 
+    def getInputLayer(self):
+        return self.inputLayer
+
+    def getOutputLayer(self):
+        return self.outputLayer
+
+    def printNetwork(self):
         for layer in self.layers:
             layer.printLayer()
     
