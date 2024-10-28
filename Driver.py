@@ -33,8 +33,10 @@ def main():
 
     print("RUN ONE FORWARD PASS...")
     testData = df.sample(n=2)
-    testClasses = testData["class"]
+    testClasses = testData["class"].to_numpy()
     testData = testData.drop(columns=["class"])
+    print("Test Classes: ")
+    print(testClasses)
     testLearner.setTestClass(testClasses)
     print("Test Data: ")
     print(testData)
