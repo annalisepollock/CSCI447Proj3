@@ -25,8 +25,12 @@ class cleaner:
         categoricalColumns = cleanedData.select_dtypes(exclude=['int', 'float']).columns.tolist()
 
         # One Hot Encoding
-        cleanedData = pd.get_dummies(cleanedData, columns=categoricalColumns, dtype=int)
-        # encoder = OneHotEncoder()
+        # cleanedData = pd.get_dummies(cleanedData, columns=categoricalColumns, dtype=int)
+        encoder = OneHotEncoder(sparse_output=False)
+        one_hot_encoded = encoder.fit_transform(cleanedData[categoricalColumns])
+        encodedData = pd.DataFrame(one_hot_encoded, columns=encoder.get_feature_names_out(categoricalColumns))
+        cleanedData = pd.concat([cleanedData, encodedData], axis=1)
+        cleanedData = cleanedData.drop(categoricalColumns, axis=1)
 
         # Iterate through columns and fill NaN values for string/object columns
         for col in cleanedData.select_dtypes(include='object'):
