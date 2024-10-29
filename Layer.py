@@ -33,7 +33,7 @@ class Layer:
 
     def sigmoid(self, values):
         for i in range(len(values)):
-            values[i] = 1 / (1 + np.exp(-values[i]))
+            values[i] = (np.exp(values[i]) - np.exp(-values[i])) / (np.exp(values[i]) + np.exp(-values[i]))
         return values
 
     def softmaxActivation(self, values):
@@ -79,9 +79,9 @@ class Layer:
             classifications = np.empty(len(self.activations[0]), dtype=object)
             for i in range(len(classifications)):
                 self.activations[:, i] = self.softmaxActivation(self.activations[:, i])
-                print("Activations after softmax: ")
-                print(self.activations[:, i])
-                print()
-                classifications[i] = self.classes[np.argmax(self.activations[:, i])]
-        return classifications
+                highestIndex = np.argmax(self.activations[:, i])
+                classifications[i] = self.classes[highestIndex]
+        print(self.activations)
+        print()
+        return classifications, self.activations
     

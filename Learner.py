@@ -1,12 +1,20 @@
 import Network
+import math
+import pandas as pd
+import numpy as np
 
 class Learner: 
 
     def __init__ (self, data, classificationType, classPlace):
         self.data = data
+        self.classPlace = classPlace
         self.classificationType = classificationType
-        self.testingData = self.data.sample(frac=0.1)
-        self.trainingData = self.data.drop(self.testingData.index)
+        if( classificationType == "classification"):
+            self.folds  = self.crossValidateClassification(data, classPlace)
+        elif( classificationType == "regression"):
+            self.folds = self.crossValidateRegression(data, classPlace)
+        else:
+            raise ValueError("Invalid classification type")
         self.learningRate = 0.01
         self.momentum = 0.9
         self.hiddenLayers = 2
@@ -14,7 +22,7 @@ class Learner:
         self.batchSize = 4
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
-        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classes, self.classificationType, self.batchSize)
+        self.network = self.tuneData()
     
     def setNetwork(self, network): # remove later after testing
         self.network = network
@@ -25,16 +33,107 @@ class Learner:
     def tuneData(self):
         pass
 
-    def crossValidate(self):
-        pass    
+    def crossValidateClassification(self, cleanDataset, classColumn ,printSteps = False):
+         # 10-fold cross validation with stratification of classes
+        if printSteps == True:
+            print("Running cross calidation with stratification...")
+        dataChunks = [None] * 10
+        classes = np.unique(cleanDataset[classColumn])
+        print("Classes: ")
+        print(classes)
+        print()
+        dataByClass = dict()
+
+        for uniqueVal in classes:
+        # Subset data based on unique class values
+            print("looking at class")
+            print(uniqueVal)
+            print()
+            classSubset = cleanDataset[cleanDataset[classColumn] == uniqueVal]
+            print("Class Subset: ")
+            print(classSubset)
+            print()
+            print("Creating a subset of data for class " + str(uniqueVal) + " with size of " + str(classSubset.shape[0]))
+            dataByClass[uniqueVal] = classSubset
+
+            numRows = math.floor(classSubset.shape[0] / 10) # of class instances per fold
+            print("Number of rows per fold: " + str(numRows))
+
+            for i in range(9):
+                classChunk = classSubset.sample(n=numRows)
+                if printSteps:
+                    print("Number of values for class " + str(uniqueVal), " in fold " + str(i+1) + " is: " + str(classChunk.shape[0]))
+                if dataChunks[i] is None:
+                    dataChunks[i] = classChunk
+                else:
+                    dataChunks[i] = pd.concat([dataChunks[i], classChunk])
+
+                classSubset = classSubset.drop(classChunk.index)
+
+        # the last chunk might be slightly different size if dataset size is not divisible by 10
+            if printSteps == True:
+                print("Number of values for class " + str(uniqueVal), " in fold " + str(10) + " is: " + str(classSubset.shape[0]))
+            dataChunks[9] = pd.concat([dataChunks[9], classSubset])
+
+        if printSteps == True:
+            for i in range(len(dataChunks)):
+                print("Size of fold " + str(i+1) + " is " + str(dataChunks[i].shape[0]))
+
+        return dataChunks
+
+    def crossValidateRegression(self, data, targetColumn, printSteps = False):
+        if printSteps == True:
+            print("Running cross validation with stratification...")
+        dataChunks = [None] * 10
+        binLabels, binEdges = pd.qcut(data[targetColumn], q=3, retbins=True, labels=False)
+        uniqueBins = np.unique(binLabels)
+        for binLabel in uniqueBins:
+            print("Creating a subset of data for bin " + str(binLabel))
+            binSubset = data[binLabels == binLabel]
+            print("Bin Subset: ")
+            print(binSubset)
+            print()
+            numRows = math.floor(binSubset.shape[0] / 10)
+            for i in range(9):
+                binChunk = binSubset.sample(n=numRows)
+                if dataChunks[i] is None:
+                    dataChunks[i] = binChunk
+                else:
+                    dataChunks[i] = pd.concat([dataChunks[i], binChunk])
+                binSubset = binSubset.drop(binChunk.index)
+            dataChunks[9] = pd.concat([dataChunks[9], binSubset])
+        return dataChunks
+    
     def train(self):
-        pass    
+        batches = self.network.createBatches(self.data)
+        batchIndex = 0 
+        converged = False
+        for i in range(1):
+            print("BATCH")
+            batch = batches[batchIndex % len(batches)]
+            print(batch)
+            print()
+            testClasses = batch[self.classPlace].to_numpy()
+            testData = batch.drop(columns=[self.classPlace])
+            output = self.forwardPass(testData)
+            print("OUTPUT: ")
+            print(output)
+            print()
+            if(self.classificationType == "classification"):
+                output = output[1]
+            self.backwardPass(output, testClasses)
+        #until convergence:
+            # 
+            #output = self.forwardpass()
+            #self.backwardPass(output)
+        pass
     def test(self):
         pass
     def forwardPass(self, batch):
-        pass
+        print("FORWARD PASS")
+        return self.network.forwardPass(batch)
 
-    def backwardPass(self):
+    def backwardPass(self, output, testClasses):
         test = self.network
         print("BACKWARD PASS TESTING: ")
         test.printNetwork()

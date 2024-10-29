@@ -1,49 +1,59 @@
 import Network 
 import Learner
 import pandas as pd
+import numpy as np
 
 def main():
-
     print("CREATE TEST DF...")
-    data = {
-    'feature1': [1, 2, 3, 4, 2, 3, 4, 5, 1, 2, 3, 4],
-    'feature2': [5, 6, 7, 8, 6, 7, 8, 9, 5, 6, 7, 8],
-    'feature3': [9, 10, 11, 12, 10, 11, 12, 13, 9, 10, 11, 12],
-    'feature4': [13, 14, 15, 16, 14, 15, 16, 17, 13, 14, 15, 16],
-    'class': ['Red', 'Blue', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Red']
+    classificationData = {
+    'feature1': [100, 150, 200, 250, 150, 200, 250, 300, 100, 150, 200, 250, 150, 200, 250, 300,
+                 100, 150, 200, 250, 150, 200, 250, 300, 100, 150, 200, 250, 150, 200],
+    'feature2': [500, 600, 700, 800, 600, 700, 800, 900, 500, 600, 700, 800, 600, 700, 800, 900,
+                 500, 600, 700, 800, 600, 700, 800, 900, 500, 600, 700, 800, 600, 700],
+    'feature3': [900, 1000, 1100, 1200, 1000, 1100, 1200, 1300, 900, 1000, 1100, 1200, 1000, 1100, 1200, 1300,
+                 900, 1000, 1100, 1200, 1000, 1100, 1200, 1300, 900, 1000, 1100, 1200, 1000, 1100],
+    'feature4': [1300, 1400, 1500, 1600, 1400, 1500, 1600, 1700, 1300, 1400, 1500, 1600, 1400, 1500, 1600, 1700,
+                 1300, 1400, 1500, 1600, 1400, 1500, 1600, 1700, 1300, 1400, 1500, 1600, 1400, 1500],
+    'class': ['Red', 'Blue', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Green', 'Green',
+              'Red', 'Blue', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green', 'Red', 'Blue', 'Green']
     }
-
+    regressionData = {
+    'feature1': [100, 150, 200, 250, 150, 200, 250, 300, 100, 150, 200, 250, 150, 200, 250, 300,
+                 100, 150, 200, 250, 150, 200, 250, 300, 100, 150, 200, 250, 150, 200],
+    'feature2': [500, 600, 700, 800, 600, 700, 800, 900, 500, 600, 700, 800, 600, 700, 800, 900,
+                 500, 600, 700, 800, 600, 700, 800, 900, 500, 600, 700, 800, 600, 700],
+    'feature3': [900, 1000, 1100, 1200, 1000, 1100, 1200, 1300, 900, 1000, 1100, 1200, 1000, 1100, 1200, 1300,
+                 900, 1000, 1100, 1200, 1000, 1100, 1200, 1300, 900, 1000, 1100, 1200, 1000, 1100],
+    'feature4': [1300, 1400, 1500, 1600, 1400, 1500, 1600, 1700, 1300, 1400, 1500, 1600, 1400, 1500, 1600, 1700,
+                 1300, 1400, 1500, 1600, 1400, 1500, 1600, 1700, 1300, 1400, 1500, 1600, 1400, 1500],
+    'class': [1.24, 3.55, 2.342, 1.235, 4.324, 1.324, 1.54, 2.34, 1.09, 4.242, 5.234, 3.134, 4.242, 1.234, 2.234, 3.86,
+              1.234, 1.46, 2.13, 4.76, 3.65, 1.87, 3.45, 3.12, 4.234, 1.68, 3.45, 1.354, 4.231, 5.342]
+    }
     # Create DataFrame
-    df = pd.DataFrame(data)
-    hiddenLayers = 3
+    classificationDf = pd.DataFrame(classificationData)
+    regressionDf = pd.DataFrame(regressionData)
+    hiddenLayers = 1
     neuronsPerLayer = 5
     features = 4 
     classes = 3
+    batchSize= 4
     classesList = ["Red", "Blue", "Green"]
-    batchSize = 2
 
-    print("CREATE TEST NETWORK...")
-    test = Network.Network(hiddenLayers, neuronsPerLayer, features, classes, classesList, "classification", batchSize)
-    test.printNetwork()
+    print("CREATE REGRESSION TEST NETWORK...")
+    test = Network.Network(hiddenLayers, neuronsPerLayer, features, classes, "classification", batchSize, classesList)
+    testRegression = Network.Network(hiddenLayers, neuronsPerLayer, features, 1, "regression", 4)
+    regressionTest = Learner.Learner(regressionDf, "regression", "class")
+    regressionTest.setNetwork(testRegression)
+    regressionTest.train()
+
+
+
     print()
 
-    print("CREATE TEST LEARNER, ADD TEST NETWORK...")
-    testLearner = Learner.Learner(df, "classification", "class")
+    print("CREATE CLASSIFICATION TEST LEARNER, ADD TEST NETWORK...")
+    testLearner = Learner.Learner(classificationDf, "classification", "class")
     testLearner.setNetwork(test)
-
-    print("RUN ONE FORWARD PASS...")
-    testData = df.sample(n=2)
-    testClasses = testData["class"].to_numpy()
-    testData = testData.drop(columns=["class"])
-    print("Test Classes: ")
-    print(testClasses)
-    testLearner.setTestClass(testClasses)
-    print("Test Data: ")
-    print(testData)
-    print()
-    output = test.forwardPass(testData)
-    print("Classified As:")
-    print(output)
+    testLearner.train()
 
     print()
 

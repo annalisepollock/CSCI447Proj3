@@ -9,8 +9,9 @@ class LayerName(Enum):
 import Layer 
 
 class Network:
-    def __init__ (self, hiddenLayers, neuronsPerLayer, inputSize, outputSize, classes, classificationType, batchSize):
+    def __init__ (self, hiddenLayers, neuronsPerLayer, inputSize, outputSize, classificationType, batchSize, classes=[]):
         self.layers = []
+        self.batchSize = batchSize
         #create input layer
         self.inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
         self.layers.append(self.inputLayer)
@@ -31,7 +32,18 @@ class Network:
         for i in range(len(self.layers) - 1):
             self.layers[i].setNextLayer(self.layers[i + 1])
             self.layers[i + 1].setPreviousLayer(self.layers[i])
-    
+
+    def setHidenLayers(self, hiddenLayers):
+        self.hiddenLayers = hiddenLayers
+
+    def createBatches(self, data):
+        batches = []
+        for i in range(0, len(data), self.batchSize):
+            batches.append(data[i:i + self.batchSize])
+        print("Batches: ")
+        print(batches) 
+        return batches
+
     def getInputLayer(self):
         return self.inputLayer
 
