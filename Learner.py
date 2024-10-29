@@ -2,17 +2,21 @@ import Network
 import math
 import pandas as pd
 import numpy as np
+import ClassificationInfo
+from ClassificationInfo import Accuracy
 
 class Learner: 
 
     def __init__ (self, data, classificationType, classPlace):
         self.data = data
+        self.classificationInfos = []
         self.classPlace = classPlace
         self.classificationType = classificationType
         if( classificationType == "classification"):
             self.folds  = self.crossValidateClassification(data, classPlace)
         elif( classificationType == "regression"):
             self.folds = self.crossValidateRegression(data, classPlace)
+            self.accuracyThreshold = 0.05 * data[classPlace].mean()
         else:
             raise ValueError("Invalid classification type")
         self.learningRate = 0.01
@@ -104,8 +108,8 @@ class Learner:
             dataChunks[9] = pd.concat([dataChunks[9], binSubset])
         return dataChunks
     
-    def train(self):
-        batches = self.network.createBatches(self.data)
+    def train(self, trainData):
+        batches = self.network.createBatches(trainData)
         batchIndex = 0 
         converged = False
         for i in range(1):
@@ -127,8 +131,49 @@ class Learner:
             #output = self.forwardpass()
             #self.backwardPass(output)
         pass
-    def test(self):
-        pass
+    def test(self, testData):
+        classifications = ClassificationInfo.ClassificationInfo()
+        testClasses = testData[self.classPlace].to_numpy()
+        testData = testData.drop(columns=[self.classPlace])
+        output = self.forwardPass(testData)
+        if(self.classificationType == "classification"):
+            output = output[0]
+            for i in range(len(output)):
+                print("Predicted: " + str(output[i]) + " Actual: " + str(testClasses[i]))
+                classifications.addTrueClass([testClasses[i], output[i]])
+                classifications.addConfusion(self.classificationAccuracy(testClasses[i], output[i]))
+        elif(self.classificationType == "regression"):
+            for i in range(len(output)):
+                print("Predicted: " + str(output[i]) + " Actual: " + str(testClasses[i]))
+                classifications.addTrueClass([testClasses[i], output[i]])
+                classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[i]))
+        self.classificationInfos.append(classifications)
+
+
+    def classificationAccuracy(self, trueClass, predClass):
+        if trueClass == predClass:
+            if trueClass == self.classes[0]:
+                return Accuracy.TP
+            else:
+                return Accuracy.TN
+        else:
+            if trueClass == self.classes[0]:
+                return Accuracy.FN
+            else:
+                return Accuracy.FP
+        
+    def regressionAccuracy(self, trueClass, predClass):
+        if abs(trueClass - predClass) <= self.accuracyThreshold:
+            if(trueClass < predClass):
+                return Accuracy.TN
+            else:
+                return Accuracy.TP
+        else:
+            if(trueClass < predClass):
+                return Accuracy.FN
+            else:
+                return Accuracy.FP
+    
     def forwardPass(self, batch):
         print("FORWARD PASS")
         return self.network.forwardPass(batch)
@@ -140,3 +185,12 @@ class Learner:
 
     def gradientDescent(self):
         pass
+    
+    def run(self):
+        for fold in self.folds:
+            trainData = self.data.drop(fold.index)
+            testData = fold
+            self.train(trainData)
+            self.test(testData)
+
+        return self.classificationInfos
