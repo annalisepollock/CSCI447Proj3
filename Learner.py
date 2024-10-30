@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import ClassificationInfo
 from ClassificationInfo import Accuracy
+from sklearn.preprocessing import OneHotEncoder
 
 class Learner: 
 
@@ -108,8 +109,8 @@ class Learner:
             dataChunks[9] = pd.concat([dataChunks[9], binSubset])
         return dataChunks
     
-    def train(self, trainData):
-        batches = self.network.createBatches(trainData)
+    def train(self):
+        batches = self.network.createBatches(self.data)
         batchIndex = 0 
         converged = False
         for i in range(1):
@@ -125,12 +126,19 @@ class Learner:
             print()
             if(self.classificationType == "classification"):
                 output = output[1]
-            self.backwardPass(output, testClasses)
+                oneHot = np.zeros((len(testClasses), len(self.classes)))
+                classesList = self.classes.tolist()
+                for i in range(len(testClasses)):
+                    oneHot[i][classesList.index(testClasses[i])] = 1
+                self.backwardPass(oneHot)
+            else:
+                self.backwardPass(testClasses)
         #until convergence:
             # 
             #output = self.forwardpass()
             #self.backwardPass(output)
         pass
+
     def test(self, testData):
         classifications = ClassificationInfo.ClassificationInfo()
         testClasses = testData[self.classPlace].to_numpy()
@@ -178,7 +186,7 @@ class Learner:
         print("FORWARD PASS")
         return self.network.forwardPass(batch)
 
-    def backwardPass(self, output, testClasses):
+    def backwardPass(self, testClasses):
         test = self.network
         print("BACKWARD PASS TESTING: ")
         test.printNetwork()
