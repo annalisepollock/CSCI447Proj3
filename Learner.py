@@ -109,7 +109,7 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
-        batches = self.network.createBatches(trainData)
+        batches = self.network.createBatches(self.data)
         batchIndex = 0 
         converged = False
         for i in range(1):
@@ -125,7 +125,7 @@ class Learner:
             print()
             if(self.classificationType == "classification"):
                 output = output[1]
-            self.backwardPass(output, testClasses)
+            self.backwardPass(testClasses)
         #until convergence:
             # 
             #output = self.forwardpass()
@@ -178,9 +178,9 @@ class Learner:
         print("FORWARD PASS")
         return self.network.forwardPass(batch)
 
-    def backwardPass(self, output, testClasses):
+    def backwardPass(self, testClasses):
         print("RUNNING BACKWARD PASS...")
-        currLayer = output
+        currLayer = self.network.getOutputLayer()
         print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
         # calculate error (targets - predictions)
         error = testClasses - currLayer.activations

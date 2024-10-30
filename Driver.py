@@ -44,7 +44,7 @@ def main():
     testRegression = Network.Network(hiddenLayers, neuronsPerLayer, features, 1, "regression", 4)
     regressionTest = Learner.Learner(regressionDf, "regression", "class")
     regressionTest.setNetwork(testRegression)
-    regressionTest.train()
+    #regressionTest.train()
 
 
 
@@ -53,7 +53,8 @@ def main():
     print("CREATE CLASSIFICATION TEST LEARNER, ADD TEST NETWORK...")
     testLearner = Learner.Learner(classificationDf, "classification", "class")
     testLearner.setNetwork(test)
-    testLearner.train()
+    testLearner.run()
+    #testLearner.train()
 
     print()
 
