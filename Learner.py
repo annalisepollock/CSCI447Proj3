@@ -130,7 +130,7 @@ class Learner:
                 classesList = self.classes.tolist()
                 for i in range(len(testClasses)):
                     oneHot[i][classesList.index(testClasses[i])] = 1
-                self.backwardPass(oneHot)
+                self.backwardPass(oneHot.T)
             else:
                 self.backwardPass(testClasses)
         #until convergence:
@@ -188,12 +188,25 @@ class Learner:
 
     def backwardPass(self, testClasses):
         print("BACKWARD PASS...")
+        print("OUTPUT LAYER: ")
         currLayer = self.network.getOutputLayer()
+        print(currLayer.activations)
+        print("TEST CLASSES: ")
+        print(testClasses)
         print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
         # calculate error (targets - predictions)
         error = testClasses - currLayer.activations
+
+        print("MULTIPLY ERROR")
+        print(error)
+        print("BY PREV ACTIVATIONS")
+        print(currLayer.prev.activations)
+
+        print("PREV WEIGHTS:")
+        print(currLayer.prev.weights)
+
         # weight update for output layer
-        outputWeightUpdate = self.learningRate * error * currLayer.prev.activations.T
+        outputWeightUpdate = self.learningRate * np.dot(error, currLayer.prev.activations.T)
 
         print("PREVIOUS WEIGHTS:")
         print(currLayer.prev.weights)
@@ -201,33 +214,49 @@ class Learner:
         print("\nWEIGHT UPDATE:")
         print(outputWeightUpdate)
 
-        # apply weight update to output layer weights
-        print("\nNEW WEIGHTS:")
-        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate + self.momentum*currLayer.prev.weights
-
         hiddenLayer = currLayer.getPrev()
         # if there are more than just the input and output layers...move through each layer and update weights
-        while str(hiddenLayer.getPrev().name) != str(self.network.getInputLayer().name):
+        while str(hiddenLayer.name) != str(self.network.getInputLayer().name):
             # apply hidden layer weight update rule
             print("\nCALCULATE WEIGHT UPDATE  " + str(hiddenLayer.name) + " LAYER...")
 
             print("PREVIOUS WEIGHTS: ")
             print(hiddenLayer.prev.weights)
 
-            propagatedError = np.sum(outputWeightUpdate.T * error) * hiddenLayer.activations * (
+            print("PROPAGATED ERROR...")
+            print("\nOUTPUTWEIGHTUPDATE")
+            print(outputWeightUpdate)
+            print("ERROR")
+            print(error)
+            print("HIDDEN LAYER ACTIVATIONS")
+            print(hiddenLayer.activations)
+
+            print("HIDDEN LAYER PREVIOUS ACTIVATIONS")
+            print(hiddenLayer.prev.activations)
+
+
+            propagatedError = np.sum(np.dot(outputWeightUpdate.T, error)) * hiddenLayer.activations * (
                         1 - hiddenLayer.activations)
+
+            print("PROPAGATED ERROR")
+            print(propagatedError)
             # calculate hidden layer weight update
-            hiddenWeightUpdate = self.learningRate * (propagatedError*hiddenLayer.prev.activations.T)
+            hiddenWeightUpdate = self.learningRate * np.dot(hiddenLayer.prev.activations, propagatedError.T)
             print("\nWEIGHT UPDATE:")
             print(hiddenWeightUpdate)
 
             # apply weight update
-            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate + self.momentum*hiddenLayer.prev.weights
+            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate.T + self.momentum*hiddenLayer.prev.weights
             print("\nNEW WEIGHTS:")
             print(hiddenLayer.prev.weights)
 
             # move to previous layer in network
             hiddenLayer = hiddenLayer.getPrev()
+
+        # apply weight update to output layer weights
+        print("\nNEW WEIGHTS FOR OUTPUT:")
+        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate + self.momentum*currLayer.prev.weights
+        print(currLayer.prev.weights)
 
     def run(self):
         for fold in self.folds:
