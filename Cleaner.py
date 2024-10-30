@@ -44,10 +44,8 @@ class Cleaner:
         # Z-score normalization
         normalizeColumns = list(cleanedData.columns)
         normalizeColumns.remove(classCol)
-        print(normalizeColumns)
-        print()
-        print(encodedData)
-        normalizeColumns.remove(encodedData.columns)
+        one_hot_encoded_columns = list(encodedData.columns)
+        normalizeColumns = [col for col in normalizeColumns if col not in one_hot_encoded_columns]
 
         for col in normalizeColumns:
             col_zscore = col + '_zscore'
