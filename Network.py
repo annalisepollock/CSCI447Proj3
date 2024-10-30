@@ -35,6 +35,14 @@ class Network:
 
     def setHiddenLayers(self, hiddenLayers):
         self.hiddenLayers = hiddenLayers
+    
+    def setBatchSize(self, batchSize):
+        self.batchSize = batchSize
+        for layer in self.layers:
+            layer.setBatchSize(batchSize)
+    
+    def getBatchSize(self):
+        return self.batchSize
 
     def createBatches(self, data):
         batches = []

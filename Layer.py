@@ -16,6 +16,8 @@ class Layer:
     def setPreviousLayer(self, previousLayer):
         self.prev = previousLayer
 
+    def setBatchSize(self, batchSize):
+        self.activations = np.empty((len(self.activations), batchSize))
     def getNext(self):
         return self.next
     def getPrev(self):
@@ -32,9 +34,7 @@ class Layer:
         print("\n")
 
     def sigmoid(self, values):
-        for i in range(len(values)):
-            values[i] = (np.exp(values[i]) - np.exp(-values[i])) / (np.exp(values[i]) + np.exp(-values[i]))
-        return values
+        return np.tanh(values)
 
     def softmaxActivation(self, values):
         for i in range(len(values)):

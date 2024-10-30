@@ -2,11 +2,11 @@ import math
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 
-class cleaner:
-    def __init__(self, dataset):
-        self.dataset = dataset
+class Cleaner:
+    def __init__(self):
+        self.name = "Cleaner"
 
-    def cleaner(self, dataFrame, dropColumns, classCol):
+    def clean(self, dataFrame, dropColumns, classCol):
         # ADDRESS NULL VALUES WHERE COLUMNS/ROWS NEED TO BE REMOVED
         # If true class is unknown, drop the row
         cleanedData = dataFrame.dropna(subset=[classCol])
@@ -44,6 +44,10 @@ class cleaner:
         # Z-score normalization
         normalizeColumns = list(cleanedData.columns)
         normalizeColumns.remove(classCol)
+        print(normalizeColumns)
+        print()
+        print(encodedData)
+        normalizeColumns.remove(encodedData.columns)
 
         for col in normalizeColumns:
             col_zscore = col + '_zscore'

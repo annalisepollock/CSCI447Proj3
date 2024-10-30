@@ -110,10 +110,12 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
-        batches = self.network.createBatches(self.data)
+        if(self.network.getBatchSize() != self.batchSize):
+            self.network.setBatchSize(self.batchSize)
+        batches = self.network.createBatches(trainData)
         batchIndex = 0 
         converged = False
-        for i in range(1):
+        for i in range(100):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
             print(batch)
@@ -133,13 +135,9 @@ class Learner:
                 self.backwardPass(oneHot.T)
             else:
                 self.backwardPass(testClasses)
-        #until convergence:
-            # 
-            #output = self.forwardpass()
-            #self.backwardPass(output)
-        pass
 
     def test(self, testData):
+        self.network.setBatchSize(len(testData))
         classifications = ClassificationInfo.ClassificationInfo()
         testClasses = testData[self.classPlace].to_numpy()
         testData = testData.drop(columns=[self.classPlace])
@@ -259,10 +257,13 @@ class Learner:
         print(currLayer.prev.weights)
 
     def run(self):
+        count = 0
         for fold in self.folds:
-            trainData = self.data.drop(fold.index)
-            testData = fold
-            self.train(trainData)
-            self.test(testData)
+            while count < 1:
+                trainData = self.data.drop(fold.index)
+                testData = fold
+                self.train(trainData)
+                self.test(testData)
+                count += 1
 
         return self.classificationInfos

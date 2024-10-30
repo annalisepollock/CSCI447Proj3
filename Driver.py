@@ -1,10 +1,73 @@
+import Cleaner
 import Network 
 import Learner
 import pandas as pd
 import numpy as np
+from ucimlrepo import fetch_ucirepo
+import warnings
+
 
 def main():
+    warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
+    cleaner = Cleaner.Cleaner()
+    #IMPORT DATA SETS 
+    print("BREAST CANCER")
+    breastCancerData =  fetch_ucirepo(id=15)
+    breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
+    breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
+    print(breastCancerClean.head(5))
+    print()
+    print(breastCancerClean.tail(5))
+    print()
+
+    print("GLASS")
+    glassData =  fetch_ucirepo(id=42)
+    glassDataFrame = pd.DataFrame(glassData.data.original)
+    glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
+    print(glassClean.head(5))
+    print()
+    print(glassClean.tail(5))
+    print()
+
+    
+    print("SOYBEAN")
+    soybeanData =  fetch_ucirepo(id=91)
+    soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
+    soybeanClean = cleaner.clean(soybeanDataFrame, [], 'class')
+    print(soybeanClean.head(5))
+    print()
+    print(soybeanClean.tail(5))
+    print()
+
+    print("ABALONE")
+    abaloneData = fetch_ucirepo(id=1)
+    abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
+    abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
     print("CREATE TEST DF...")
+    print(abaloneClean.head(5))
+    print()
+    print(abaloneClean.tail(5))
+    print()
+    
+
+    print("COMPUTER HARDWARE")
+    computerHardwareData =  fetch_ucirepo(id=29)
+    computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
+    computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
+    print(computerClean.head(5))
+    print()
+    print(computerClean.tail(5))
+    print()
+
+    print("FOREST FIRES")
+    forestFiresData =  fetch_ucirepo(id=162)
+    forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
+    forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
+    print(forestClean.head(5))
+    print()
+    print(forestClean.tail(5))
+
+    '''
     classificationData = {
     'feature1': [100, 150, 200, 250, 150, 200, 250, 300, 100, 150, 200, 250, 150, 200, 250, 300,
                  100, 150, 200, 250, 150, 200, 250, 300, 100, 150, 200, 250, 150, 200],
@@ -40,22 +103,20 @@ def main():
     classesList = ["Red", "Blue", "Green"]
 
     print("CREATE REGRESSION TEST NETWORK...")
-    test = Network.Network(hiddenLayers, neuronsPerLayer, features, classes, "classification", batchSize, classesList)
     testRegression = Network.Network(hiddenLayers, neuronsPerLayer, features, 1, "regression", 4)
     regressionTest = Learner.Learner(regressionDf, "regression", "class")
     regressionTest.setNetwork(testRegression)
     #regressionTest.train()
 
 
-
-    print()
-
     print("CREATE CLASSIFICATION TEST LEARNER, ADD TEST NETWORK...")
+    test = Network.Network(hiddenLayers, neuronsPerLayer, features, classes, "classification", batchSize, classesList)
     testLearner = Learner.Learner(classificationDf, "classification", "class")
     testLearner.setNetwork(test)
     testLearner.run()
     #testLearner.train()
 
     print()
+    '''
 
 main()
