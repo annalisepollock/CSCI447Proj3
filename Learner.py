@@ -221,9 +221,6 @@ class Learner:
             # move to previous layer in network
             hiddenLayer = hiddenLayer.getPrev()
 
-    def gradientDescent(self):
-        pass
-    
     def run(self):
         for fold in self.folds:
             trainData = self.data.drop(fold.index)

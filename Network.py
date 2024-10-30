@@ -33,7 +33,7 @@ class Network:
             self.layers[i].setNextLayer(self.layers[i + 1])
             self.layers[i + 1].setPreviousLayer(self.layers[i])
 
-    def setHidenLayers(self, hiddenLayers):
+    def setHiddenLayers(self, hiddenLayers):
         self.hiddenLayers = hiddenLayers
 
     def createBatches(self, data):
