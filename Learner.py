@@ -109,7 +109,7 @@ class Learner:
             dataChunks[9] = pd.concat([dataChunks[9], binSubset])
         return dataChunks
     
-    def train(self):
+    def train(self, trainData):
         batches = self.network.createBatches(self.data)
         batchIndex = 0 
         converged = False
@@ -187,13 +187,48 @@ class Learner:
         return self.network.forwardPass(batch)
 
     def backwardPass(self, testClasses):
-        test = self.network
-        print("BACKWARD PASS TESTING: ")
-        test.printNetwork()
+        print("BACKWARD PASS...")
+        currLayer = self.network.getOutputLayer()
+        print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
+        # calculate error (targets - predictions)
+        error = testClasses - currLayer.activations
+        # weight update for output layer
+        outputWeightUpdate = self.learningRate * error * currLayer.prev.activations.T
 
-    def gradientDescent(self):
-        pass
-    
+        print("PREVIOUS WEIGHTS:")
+        print(currLayer.prev.weights)
+
+        print("\nWEIGHT UPDATE:")
+        print(outputWeightUpdate)
+
+        # apply weight update to output layer weights
+        print("\nNEW WEIGHTS:")
+        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate + self.momentum*currLayer.prev.weights
+
+        hiddenLayer = currLayer.getPrev()
+        # if there are more than just the input and output layers...move through each layer and update weights
+        while str(hiddenLayer.getPrev().name) != str(self.network.getInputLayer().name):
+            # apply hidden layer weight update rule
+            print("\nCALCULATE WEIGHT UPDATE  " + str(hiddenLayer.name) + " LAYER...")
+
+            print("PREVIOUS WEIGHTS: ")
+            print(hiddenLayer.prev.weights)
+
+            propagatedError = np.sum(outputWeightUpdate.T * error) * hiddenLayer.activations * (
+                        1 - hiddenLayer.activations)
+            # calculate hidden layer weight update
+            hiddenWeightUpdate = self.learningRate * (propagatedError*hiddenLayer.prev.activations.T)
+            print("\nWEIGHT UPDATE:")
+            print(hiddenWeightUpdate)
+
+            # apply weight update
+            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate + self.momentum*hiddenLayer.prev.weights
+            print("\nNEW WEIGHTS:")
+            print(hiddenLayer.prev.weights)
+
+            # move to previous layer in network
+            hiddenLayer = hiddenLayer.getPrev()
+
     def run(self):
         for fold in self.folds:
             trainData = self.data.drop(fold.index)

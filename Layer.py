@@ -9,7 +9,7 @@ class Layer:
         self.classificationType = classificationType
         if(name == LayerName.Output):
             self.classes = classes
-    
+
     def setNextLayer(self, nextLayer):
         self.next = nextLayer
     
