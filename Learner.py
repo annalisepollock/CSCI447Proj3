@@ -209,7 +209,7 @@ class Learner:
             propagatedError = np.sum(outputWeightUpdate.T * error) * hiddenLayer.activations * (
                         1 - hiddenLayer.activations)
             # calculate hidden layer weight update
-            hiddenWeightUpdate = self.learningRate * np.dot(propagatedError, hiddenLayer.prev.activations.T)
+            hiddenWeightUpdate = self.learningRate * (propagatedError*hiddenLayer.prev.activations.T)
             print("\nWEIGHT UPDATE:")
             print(hiddenWeightUpdate)
 
