@@ -179,7 +179,7 @@ class Learner:
         return self.network.forwardPass(batch)
 
     def backwardPass(self, testClasses):
-        print("RUNNING BACKWARD PASS...")
+        print("BACKWARD PASS...")
         currLayer = self.network.getOutputLayer()
         print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
         # calculate error (targets - predictions)
@@ -195,7 +195,7 @@ class Learner:
 
         # apply weight update to output layer weights
         print("\nNEW WEIGHTS:")
-        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate
+        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate + self.momentum*currLayer.prev.weights
 
         hiddenLayer = currLayer.getPrev()
         # if there are more than just the input and output layers...move through each layer and update weights
@@ -214,7 +214,7 @@ class Learner:
             print(hiddenWeightUpdate)
 
             # apply weight update
-            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate
+            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate + self.momentum*hiddenLayer.prev.weights
             print("\nNEW WEIGHTS:")
             print(hiddenLayer.prev.weights)
 
