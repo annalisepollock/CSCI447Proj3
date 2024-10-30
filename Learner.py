@@ -198,16 +198,12 @@ class Learner:
         print("MULTIPLY ERROR")
         print(error)
         print("BY PREV ACTIVATIONS")
-        print(currLayer.prev.activations)
-
-        print("PREV WEIGHTS:")
+        print(currLayer.prev.activations.T)
+        print("PREVIOUS WEIGHTS:")
         print(currLayer.prev.weights)
 
         # weight update for output layer
         outputWeightUpdate = self.learningRate * np.dot(error, currLayer.prev.activations.T)
-
-        print("PREVIOUS WEIGHTS:")
-        print(currLayer.prev.weights)
 
         print("\nWEIGHT UPDATE:")
         print(outputWeightUpdate)
@@ -232,19 +228,18 @@ class Learner:
             print("HIDDEN LAYER PREVIOUS ACTIVATIONS")
             print(hiddenLayer.prev.activations)
 
-
-            propagatedError = np.sum(np.dot(outputWeightUpdate.T, error)) * hiddenLayer.activations * (
+            propagatedError = np.dot(outputWeightUpdate.T, error) * hiddenLayer.activations * (
                         1 - hiddenLayer.activations)
 
             print("PROPAGATED ERROR")
             print(propagatedError)
             # calculate hidden layer weight update
-            hiddenWeightUpdate = self.learningRate * np.dot(hiddenLayer.prev.activations, propagatedError.T)
+            hiddenWeightUpdate = self.learningRate * np.dot(propagatedError, hiddenLayer.prev.activations.T)
             print("\nWEIGHT UPDATE:")
             print(hiddenWeightUpdate)
 
             # apply weight update
-            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate.T + self.momentum*hiddenLayer.prev.weights
+            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate + self.momentum*hiddenLayer.prev.weights
             print("\nNEW WEIGHTS:")
             print(hiddenLayer.prev.weights)
 
