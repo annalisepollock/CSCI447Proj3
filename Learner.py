@@ -181,7 +181,7 @@ class Learner:
         batchIndex = 0 
         converged = False
         #while self.network.checkConvergence() == False: --> USE ONCE CONVERGENCE FULLY IMPLEMENTED
-        for i in range(100):
+        for i in range(50):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
             print(batch)
@@ -265,6 +265,10 @@ class Learner:
         print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
         # calculate error (targets - predictions)
         error = testClasses - currLayer.activations
+        errorAvg = np.mean(error, axis=0)
+        print("ERROR AVG")
+        print(errorAvg)
+        self.losses.append(errorAvg)
 
         print("MULTIPLY ERROR")
         print(error)
@@ -274,7 +278,7 @@ class Learner:
         print(currLayer.prev.weights)
 
         # weight update for output layer
-        outputWeightUpdate = self.learningRate * np.dot(error, currLayer.prev.activations.T)
+        outputWeightUpdate = self.learningRate * np.dot(error, currLayer.prev.activations.T) + self.momentum * currLayer.prev.prevUpdate
 
         print("\nWEIGHT UPDATE:")
         print(outputWeightUpdate)
@@ -305,13 +309,13 @@ class Learner:
             print("PROPAGATED ERROR")
             print(propagatedError)
             # calculate hidden layer weight update
-            hiddenWeightUpdate = self.learningRate * np.dot(propagatedError, hiddenLayer.prev.activations.T)
+            hiddenWeightUpdate = self.learningRate * np.dot(propagatedError, hiddenLayer.prev.activations.T) + self.momentum * hiddenLayer.prev.prevUpdate
             print("\nWEIGHT UPDATE:")
             print(hiddenWeightUpdate)
 
             # apply weight update
             hiddenLayer.prev.prevWeights = hiddenLayer.prev.weights
-            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate + self.momentum * hiddenLayer.prev.prevUpdate
+            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate
             hiddenLayer.prev.prevUpdate = hiddenWeightUpdate
             print("\nNEW WEIGHTS:")
             print(hiddenLayer.prev.weights)
@@ -322,7 +326,7 @@ class Learner:
         # apply weight update to output layer weights
         print("\nNEW WEIGHTS FOR OUTPUT:")
         currLayer.prev.prevWeights = currLayer.prev.weights
-        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate + self.momentum * currLayer.prev.prevUpdate
+        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate
         currLayer.prev.prevUpdate = outputWeightUpdate
         print(currLayer.prev.weights)
 
