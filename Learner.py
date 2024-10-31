@@ -5,29 +5,29 @@ import numpy as np
 import ClassificationInfo
 from ClassificationInfo import Accuracy
 from scipy.stats import zscore
-from sklearn.preprocessing import OneHotEncoder
-from scipy.stats import zscore
+import time
 
 class Learner: 
 
     def __init__ (self, data, classificationType, classPlace):
         self.testData = data.sample(frac=0.1)
         self.data = data.drop(self.testData.index)
+        self.losses = []
         self.classificationInfos = []
         self.classPlace = classPlace
         self.errors = []
         self.classificationType = classificationType
         if( classificationType == "classification"):
-            self.folds  = self.crossValidateClassification(data, classPlace)
+            self.folds  = self.crossValidateClassification(self.data, classPlace)
         elif( classificationType == "regression"):
-            self.folds = self.crossValidateRegression(data, classPlace)
+            self.folds = self.crossValidateRegression(self.data, classPlace)
             self.accuracyThreshold = 0.05 * data[classPlace].mean()
         else:
             raise ValueError("Invalid classification type")
         self.learningRate = 0.0001
-        self.momentum = 0.5
+        self.momentum = 0.9
         self.hiddenLayers = 1
-        self.neuronsPerLayer = self.data.shape[0] - 10
+        self.neuronsPerLayer = self.data.shape[0]
         self.batchSize = 10
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
@@ -41,12 +41,14 @@ class Learner:
     
     def checkOscillation(self, losses):
         oscillations = 0 
-        for loss in losses:
-            if(loss == losses[-1]):
+        for i in range(len(losses)):
+            loss = losses[i]
+            if(i == (len(losses) - 1)):
                 break
-            if(loss > losses[-1]):
-                oscillations += 1
-        if oscillations > 3:
+            if(i != 0):
+                if np.any(losses[i] > losses[i - 1]):
+                    oscillations += 1
+        if oscillations > 5:
             return True
         else:
             return False
@@ -54,15 +56,16 @@ class Learner:
     def tuneData(self):
         self.momentum = 0.9
         self.learningRate = 0.1
-        network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
         momentumSet = False
         learningRateSet = False
         foldIndex = 0
         while not momentumSet:
+            fold = self.folds[foldIndex % len(self.folds)]
             if self.momentum == 0.5:
-                momentumeSet = True
+                momentumSet = True
                 break
-            self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
+            self.train(self.data.drop(fold.index))
             if self.checkOscillation(self.losses):
                 self.momentum -= 0.05
         while not learningRateSet:
@@ -78,7 +81,7 @@ class Learner:
         bestNuerons = 0
         for nuerons in nueronValues:
             self.neuronsPerLayer = nuerons
-            network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+            self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             output = self.test(self.testData)
             foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
@@ -92,7 +95,7 @@ class Learner:
         bestBatchSize = 0
         for batchSize in batchSizes:
             self.batchSize = batchSize
-            network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+            self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             output = self.test(self.testData)
             foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
@@ -100,6 +103,22 @@ class Learner:
                 accuracy = foldAccuracy
                 bestBatchSize = batchSize
         self.batchSize = bestBatchSize
+        print("BEST MOMENTUM:")
+        print(str(self.momentum))
+        print()
+
+        print("BEST LEARNING RATE:")
+        print(str(self.learningRate))
+        print()
+        
+        print("BEST NEURONS PER LAYER:")
+        print(str(self.neuronsPerLayer))
+        print()
+
+        print("BEST BATCH SIZE:")
+        print(str(self.batchSize))
+        print()
+
         return Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
 
 
@@ -175,6 +194,7 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
+        self.losses = []
         if(self.network.getBatchSize() != self.batchSize):
             self.network.setBatchSize(self.batchSize)
         batches = self.network.createBatches(trainData)

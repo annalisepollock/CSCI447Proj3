@@ -42,28 +42,9 @@ def main():
     forestFiresData =  fetch_ucirepo(id=162)
     forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
     forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
-    
-    hiddenLayers = 1
-    neuronsPerLayer = breastCancerTest.shape[0] - 10
-    features = breastCancerClean.shape[1] - 1
-    classes = 2
-    batchSize= 10
-    classesList = breastCancerClean['Class'].unique()
-
-    '''
-    print("CREATE REGRESSION TEST NETWORK...")
-    testRegression = Network.Network(hiddenLayers, neuronsPerLayer, features, 1, "regression", 4)
-    regressionTest = Learner.Learner(regressionDf, "regression", "class")
-    regressionTest.setNetwork(testRegression)
-    #regressionTest.train()
-    '''
-
 
     print("CREATE CLASSIFICATION TEST LEARNER, ADD TEST NETWORK...")
-    test = Network.Network(hiddenLayers, neuronsPerLayer, features, classes, "classification", batchSize, classesList)
     testLearner = Learner.Learner(breastCancerTest, "classification", "Class")
-    testLearner.setNetwork(test)
-    testLearner.run()
     #testLearner.train()
 
     print()
