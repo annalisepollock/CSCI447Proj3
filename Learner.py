@@ -11,7 +11,8 @@ from scipy.stats import zscore
 class Learner: 
 
     def __init__ (self, data, classificationType, classPlace):
-        self.data = data
+        self.testData = data.sample(frac=0.1)
+        self.data = data.drop(self.testData.index)
         self.classificationInfos = []
         self.classPlace = classPlace
         self.classificationType = classificationType
@@ -24,8 +25,8 @@ class Learner:
             raise ValueError("Invalid classification type")
         self.learningRate = 0.0001
         self.momentum = 0.5
-        self.hiddenLayers = 2
-        self.neuronsPerLayer = 5
+        self.hiddenLayers = 1
+        self.neuronsPerLayer = self.data.shape[0] - 10
         self.batchSize = 10
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
@@ -36,9 +37,70 @@ class Learner:
     
     def setTestClass(self, testClass):
         self.testClass = testClass
-
+    
+    def checkOscillation(self, losses):
+        oscillations = 0 
+        for loss in losses:
+            if(loss == losses[-1]):
+                break
+            if(loss > losses[-1]):
+                oscillations += 1
+        if oscillations > 2:
+            return True
+        else:
+            return False
+        
     def tuneData(self):
-        pass
+        self.momentum = 0.9
+        self.learningRate = 0.01
+        network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+        momentumSet = False
+        learningRateSet = False
+        foldIndex = 0
+        while not momentumSet:
+            if self.momentum == 0.5:
+                momentumeSet = True
+                break
+            self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
+            #if loss oscillates, decrease momentum
+            #else momentumSet = True
+        while not learningRateSet:
+            if self.learningRate == 0.0001:
+                learningRateSet = True
+                break
+            self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
+            #if loss oscillates, decrease learning rate
+            #else learningRateSet = True
+        nueronsPerLayer = self.data.shape[0]
+        nueronValues = np.linspace(20, nueronsPerLayer, 5)
+        accuracy = 0
+        bestNuerons = 0
+        for nuerons in nueronValues:
+            self.neuronsPerLayer = nuerons
+            network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+            self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
+            output = self.test(self.testData)
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if(foldAccuracy > accuracy):
+                accuracy = foldAccuracy
+                bestNuerons = nuerons
+        self.neuronsPerLayer = bestNuerons
+        batchSizes = np.linspace(10, 100, 5)
+
+        accuracy = 0
+        bestBatchSize = 0
+        for batchSize in batchSizes:
+            self.batchSize = batchSize
+            network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+            self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
+            output = self.test(self.testData)
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if(foldAccuracy > accuracy):
+                accuracy = foldAccuracy
+                bestBatchSize = batchSize
+        self.batchSize = bestBatchSize
+        return Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+
 
     def crossValidateClassification(self, cleanDataset, classColumn ,printSteps = False):
          # 10-fold cross validation with stratification of classes
@@ -92,7 +154,7 @@ class Learner:
         if printSteps == True:
             print("Running cross validation with stratification...")
         dataChunks = [None] * 10
-        binLabels, binEdges = pd.qcut(data[targetColumn], q=3, retbins=True, labels=False)
+        binLabels, binEdges = pd.qcut(data[targetColumn], q=10, retbins=True, labels=False)
         uniqueBins = np.unique(binLabels)
         for binLabel in uniqueBins:
             print("Creating a subset of data for bin " + str(binLabel))
@@ -263,6 +325,7 @@ class Learner:
 
     def run(self):
         count = 0
+        self.classificationInfos = []
         for fold in self.folds:
             while count < 1:
                 trainData = self.data.drop(fold.index)
