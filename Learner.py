@@ -5,6 +5,7 @@ import numpy as np
 import ClassificationInfo
 from ClassificationInfo import Accuracy
 from sklearn.preprocessing import OneHotEncoder
+from scipy.stats import zscore
 
 class Learner: 
 
@@ -20,11 +21,11 @@ class Learner:
             self.accuracyThreshold = 0.05 * data[classPlace].mean()
         else:
             raise ValueError("Invalid classification type")
-        self.learningRate = 0.01
-        self.momentum = 0.9
+        self.learningRate = 0.0001
+        self.momentum = 0.5
         self.hiddenLayers = 2
         self.neuronsPerLayer = 5
-        self.batchSize = 4
+        self.batchSize = 10
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
         self.network = self.tuneData()
@@ -115,14 +116,19 @@ class Learner:
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
         converged = False
-        for i in range(100):
+        for i in range(20):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
             print(batch)
             print()
             testClasses = batch[self.classPlace].to_numpy()
             testData = batch.drop(columns=[self.classPlace])
-            output = self.forwardPass(testData)
+            print("Test data:")
+            print(testData)
+            zScoreTestData = zscore(testData)
+            print("Z-Scored Test Data:")
+            print(zScoreTestData)
+            output = self.forwardPass(zScoreTestData)
             print("OUTPUT: ")
             print(output)
             print()
@@ -141,7 +147,7 @@ class Learner:
         classifications = ClassificationInfo.ClassificationInfo()
         testClasses = testData[self.classPlace].to_numpy()
         testData = testData.drop(columns=[self.classPlace])
-        output = self.forwardPass(testData)
+        output = self.forwardPass(zscore(testData))
         if(self.classificationType == "classification"):
             output = output[0]
             for i in range(len(output)):

@@ -48,6 +48,9 @@ class Layer:
         print("Node Updates: ")
         print(nodeUpdates)
         print()
+        print("WEIGHTS:")
+        print(self.weights)
+        print()
         for i in range(len(nodeUpdates)):
             self.activations[i] = nodeUpdates[i]
 
