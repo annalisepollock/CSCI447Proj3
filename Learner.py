@@ -236,7 +236,7 @@ class Learner:
             print(hiddenLayer.prev.activations)
 
             propagatedError = np.dot(hiddenLayer.weights.T, error) * hiddenLayer.activations * (
-                        1 - hiddenLayer.activations)
+                    1 - hiddenLayer.activations)
 
             print("PROPAGATED ERROR")
             print(propagatedError)
@@ -246,7 +246,8 @@ class Learner:
             print(hiddenWeightUpdate)
 
             # apply weight update
-            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate + self.momentum*hiddenLayer.prev.weights
+            hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate + self.momentum * hiddenLayer.prev.prevUpdate
+            hiddenLayer.prev.prevUpdate = hiddenWeightUpdate
             print("\nNEW WEIGHTS:")
             print(hiddenLayer.prev.weights)
 
@@ -255,7 +256,8 @@ class Learner:
 
         # apply weight update to output layer weights
         print("\nNEW WEIGHTS FOR OUTPUT:")
-        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate + self.momentum*currLayer.prev.weights
+        currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate + self.momentum * currLayer.prev.prevUpdate
+        currLayer.prev.prevUpdate = outputWeightUpdate
         print(currLayer.prev.weights)
 
     def run(self):
