@@ -14,6 +14,7 @@ class Learner:
         self.data = data
         self.classificationInfos = []
         self.classPlace = classPlace
+        self.losses = []
         self.classificationType = classificationType
         if( classificationType == "classification"):
             self.folds  = self.crossValidateClassification(data, classPlace)
@@ -247,6 +248,7 @@ class Learner:
             print(hiddenWeightUpdate)
 
             # apply weight update
+            hiddenLayer.prev.prevWeights = hiddenLayer.prev.weights
             hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate + self.momentum * hiddenLayer.prev.prevUpdate
             hiddenLayer.prev.prevUpdate = hiddenWeightUpdate
             print("\nNEW WEIGHTS:")
@@ -257,6 +259,7 @@ class Learner:
 
         # apply weight update to output layer weights
         print("\nNEW WEIGHTS FOR OUTPUT:")
+        currLayer.prev.prevWeights = currLayer.prev.weights
         currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate + self.momentum * currLayer.prev.prevUpdate
         currLayer.prev.prevUpdate = outputWeightUpdate
         print(currLayer.prev.weights)

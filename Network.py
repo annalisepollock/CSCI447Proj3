@@ -35,7 +35,7 @@ class Network:
 
     def checkConvergence(self, tolerance=0):
         for layer in self.layers:
-            difference = np.abs(layer.prevActivations - layer.activations) # neg/pos doesn't matter
+            difference = np.abs(layer.prevWeights - layer.weights) # neg/pos doesn't matter
 
             # tolerance default = 0 -> no difference permitted to be considered convergence
             # other options: 0.00005, 0.00003, 0.00008, 0.00001, etc.
