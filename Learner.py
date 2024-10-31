@@ -15,7 +15,7 @@ class Learner:
         self.data = data.drop(self.testData.index)
         self.classificationInfos = []
         self.classPlace = classPlace
-        self.losses = []
+        self.errors = []
         self.classificationType = classificationType
         if( classificationType == "classification"):
             self.folds  = self.crossValidateClassification(data, classPlace)
