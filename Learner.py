@@ -46,14 +46,14 @@ class Learner:
                 break
             if(loss > losses[-1]):
                 oscillations += 1
-        if oscillations > 2:
+        if oscillations > 3:
             return True
         else:
             return False
         
     def tuneData(self):
         self.momentum = 0.9
-        self.learningRate = 0.01
+        self.learningRate = 0.1
         network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
         momentumSet = False
         learningRateSet = False
@@ -63,15 +63,15 @@ class Learner:
                 momentumeSet = True
                 break
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
-            #if loss oscillates, decrease momentum
-            #else momentumSet = True
+            if self.checkOscillation(self.losses):
+                self.momentum -= 0.05
         while not learningRateSet:
-            if self.learningRate == 0.0001:
+            if self.learningRate == 0.00001:
                 learningRateSet = True
                 break
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
-            #if loss oscillates, decrease learning rate
-            #else learningRateSet = True
+            if self.checkOscillation(self.losses):
+                self.learningRate = self.learningRate / 10
         nueronsPerLayer = self.data.shape[0]
         nueronValues = np.linspace(20, nueronsPerLayer, 5)
         accuracy = 0
