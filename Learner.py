@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import ClassificationInfo
 from ClassificationInfo import Accuracy
+from scipy.stats import zscore
 from sklearn.preprocessing import OneHotEncoder
 from scipy.stats import zscore
 
@@ -116,7 +117,7 @@ class Learner:
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
         converged = False
-        for i in range(20):
+        for i in range(100):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
             print(batch)
@@ -234,7 +235,7 @@ class Learner:
             print("HIDDEN LAYER PREVIOUS ACTIVATIONS")
             print(hiddenLayer.prev.activations)
 
-            propagatedError = np.dot(outputWeightUpdate.T, error) * hiddenLayer.activations * (
+            propagatedError = np.dot(hiddenLayer.weights.T, error) * hiddenLayer.activations * (
                         1 - hiddenLayer.activations)
 
             print("PROPAGATED ERROR")

@@ -71,7 +71,7 @@ def main():
     classificationDf = pd.DataFrame(classificationData)
     regressionDf = pd.DataFrame(regressionData)
     hiddenLayers = 1
-    neuronsPerLayer = breastCancerTest.shape[0] // 2
+    neuronsPerLayer = breastCancerTest.shape[0] - 10
     features = breastCancerClean.shape[1] - 1
     classes = 2
     batchSize= 10

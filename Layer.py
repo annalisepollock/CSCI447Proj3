@@ -37,9 +37,11 @@ class Layer:
         return np.tanh(values)
 
     def softmaxActivation(self, values):
-        for i in range(len(values)):
-            values[i] = np.exp(values[i]) / np.sum(np.exp(values))
-        return values
+        max_value = np.max(values)
+        exp_values = np.exp(values - max_value)
+        sum_exp_values = np.sum(exp_values)
+
+        return exp_values / sum_exp_values
     
     #takes a list of numpy arrays which are the updates 
     def forwardPass(self, nodeUpdates):
