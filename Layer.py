@@ -6,6 +6,7 @@ class Layer:
         self.weights = np.random.uniform(-0.01, 0.01, (nextSize, size))
         self.prevUpdate = np.zeros_like(self.weights)
         self.activations = np.empty((size, batchSize))
+        self.prevActivations = np.zeros_like(self.activations) # to track convergence
         self.name = name
         self.classificationType = classificationType
         if(name == LayerName.Output):

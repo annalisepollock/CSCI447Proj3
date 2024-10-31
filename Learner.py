@@ -117,6 +117,7 @@ class Learner:
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
         converged = False
+        #while self.network.checkConvergence() == False: --> USE ONCE CONVERGENCE FULLY IMPLEMENTED
         for i in range(100):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
