@@ -15,17 +15,19 @@ def main():
     breastCancerData =  fetch_ucirepo(id=15)
     breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
-    breastCancerTest = breastCancerClean.sample(frac=0.5)
-    testLearner = Learner.Learner(breastCancerTest, "classification", "Class")
-    hiddenLayers = 1
-    neuronsPerLayer = breastCancerClean.shape[1] - 10
-    inputSize = breastCancerClean.shape[1] - 1
-    outputSize = breastCancerClean['Class'].nunique()
-    classification = "classification"
-    batchSize = 10
-    classes = breastCancerClean['Class'].unique()
-    breastCancerLeaner = Network.Network(hiddenLayers, neuronsPerLayer, inputSize, outputSize, classification, batchSize, classes)
-    testLearner.setNetwork(breastCancerLeaner)
+    breastCancerLearner = Learner.Learner(breastCancerClean, "classification", 'Class')
+    breastCancerClassification = breastCancerLearner.run()
+    #breastCancerTest = breastCancerClean.sample(frac=0.5)
+    #testLearner = Learner.Learner(breastCancerTest, "classification", "Class")
+    # hiddenLayers = 1
+    # neuronsPerLayer = breastCancerClean.shape[1] - 10
+    # inputSize = breastCancerClean.shape[1] - 1
+    # outputSize = breastCancerClean['Class'].nunique()
+    # classification = "classification"
+    # batchSize = 10
+    # classes = breastCancerClean['Class'].unique()
+    # breastCancerLeaner = Network.Network(hiddenLayers, neuronsPerLayer, inputSize, outputSize, classification, batchSize, classes)
+    # testLearner.setNetwork(breastCancerLeaner)
     #testLearner.run()
     print()
     '''
