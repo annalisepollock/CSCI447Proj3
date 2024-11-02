@@ -17,20 +17,12 @@ def main():
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
     breastCancerTest = breastCancerClean.sample(frac=0.5)
     testLearner = Learner.Learner(breastCancerTest, "classification", "Class")
-    hiddenLayers = 1
-    neuronsPerLayer = breastCancerClean.shape[1] - 10
-    inputSize = breastCancerClean.shape[1] - 1
-    outputSize = breastCancerClean['Class'].nunique()
-    classification = "classification"
-    batchSize = 10
-    classes = breastCancerClean['Class'].unique()
-    breastCancerLeaner = Network.Network(hiddenLayers, neuronsPerLayer, inputSize, outputSize, classification, batchSize, classes)
-    testLearner.setNetwork(breastCancerLeaner)
-    #testLearner.run()
-    print()
+    classifications = testLearner.run()
+    for classification in classifications:
+        classification.printAccuracy()
+        print()
+
     '''
-
-
     print("GLASS")
     glassData =  fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
@@ -43,9 +35,11 @@ def main():
     classification = "classification"
     batchSize = 10
     classes = glassClean['Type_of_glass'].unique()
-    glassLeaner = Network.Network(hiddenLayers, neuronsPerLayer, inputSize, outputSize, classification, batchSize, classes)
-    glassLearner.setNetwork(glassLeaner)
-    glassLearner.run()
+    classifications = glassLearner.run()
+    classifications = testLearner.run()
+    for classification in classifications:
+        classification.printAccuracy()
+        print()
     print()
 
     print("SOYBEAN")

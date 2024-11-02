@@ -100,7 +100,7 @@ class Learner:
             output = self.test(self.testData)
             print("OUTPUT")
             print(output)
-            foldAccuracy = (output[0].getTP() + output[0].getTN()) / (output[0].getTP() + output[0].getTN() + output[0].getFP() + output[0].getFN())
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
             if(foldAccuracy > accuracy):
                 accuracy = foldAccuracy
                 bestNuerons = nuerons
@@ -115,7 +115,7 @@ class Learner:
             self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             output = self.test(self.testData)
-            foldAccuracy = (output[0].getTP() + output[0].getTN()) / (output[0].getTP() + output[0].getTN() + output[0].getFP() + output[0].getFN())
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
             if(foldAccuracy > accuracy):
                 accuracy = foldAccuracy
                 bestBatchSize = batchSize
@@ -137,8 +137,18 @@ class Learner:
         print(str(self.batchSize))
         print()
 
+        print("Hidden Layers: ", str(self.hiddenLayers))
+        print("Neurons Per Layer: ", str(self.neuronsPerLayer))
+        print("Features: ", str(self.features))
+        print("Classes: ", str(len(self.classes)))
+        print("Classification Type: ", str(self.classificationType))
+        print("Batch Size: ", str(self.batchSize))
+        print("Classes: ", str(self.classes))
+        print()
         return Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
 
+    def getNetwork(self):
+        return self.network
 
     def crossValidateClassification(self, cleanDataset, classColumn ,printSteps = False):
          # 10-fold cross validation with stratification of classes
@@ -241,7 +251,6 @@ class Learner:
                 self.backwardPass(testClasses)
 
     def test(self, testData):
-        classificationInfos = []
         #print("TEST DATA")
         #print(testData)
         self.network.setBatchSize(len(testData))
@@ -265,8 +274,8 @@ class Learner:
                 #print("Predicted: " + str(output[0][i]) + " Actual: " + str(testClasses[i]))
                 classifications.addTrueClass([testClasses[i], output[0][i]])
                 classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[0][i]))
-        classificationInfos.append(classifications)
-        return classificationInfos
+
+        return classifications
 
 
     def classificationAccuracy(self, trueClass, predClass):
@@ -374,15 +383,14 @@ class Learner:
 
     def run(self):
         count = 0
-        self.classificationInfos = []
+        classificationInfos = []
         for fold in self.folds:
-            while count < 1:
-                print("FOLD: ")
-                print(fold)
-                trainData = self.data.drop(fold.index)
-                testData = fold
-                self.train(trainData)
-                self.test(testData)
-            count += 1
+            print("FOLD: ")
+            print(fold)
+            trainData = self.data.drop(fold.index)
+            testData = fold
+            self.train(trainData)
+            classification = self.test(testData)
+            classificationInfos.append(classification)
 
-        return self.classificationInfos
+        return classificationInfos

@@ -33,6 +33,7 @@ class Layer:
     
     def printLayer(self):
         print("Layer: " + str(self.name))
+        print("Size: " + str(len(self.weights)))
         print("Weights: " + str(self.weights))
         print("Activations: " + str(self.activations))
         if(self.name == LayerName.Output):

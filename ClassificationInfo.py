@@ -26,7 +26,13 @@ class ClassificationInfo:
             self.FP += 1
         elif Accuracy == Accuracy.FN:
             self.FN += 1
-    
+
+    def printAccuracy(self):
+        print("True Positives: " + str(self.TP))
+        print("True Negatives: " + str(self.TN))
+        print("False Positives: " + str(self.FP))
+        print("False Negatives: " + str(self.FN))
+        
     def getFP(self):
         return self.FP
     def getFN(self):
