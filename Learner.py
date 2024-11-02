@@ -13,9 +13,9 @@ class Learner:
         self.testData = data.sample(frac=0.1)
         self.data = data.drop(self.testData.index)
         self.losses = []
+        self.errors = []
         self.classificationInfos = []
         self.classPlace = classPlace
-        self.errors = []
         self.classificationType = classificationType
         if( classificationType == "classification"):
             self.folds  = self.crossValidateClassification(self.data, classPlace)
@@ -286,6 +286,22 @@ class Learner:
         # calculate error (targets - predictions)
         error = testClasses - currLayer.activations
         errorAvg = np.mean(error, axis=0)
+        numSamples = testClasses.shape[1]
+
+        epsilon = 1e-10  # small value to avoid log(0)
+        predictions = np.clip(currLayer.activations, epsilon, 1 - epsilon)  # clip values for numerical stability
+
+        if self.classificationType == "classification":
+            # Cross-Entropy Loss for Classification
+            loss = -(1/numSamples)*(np.sum(np.log(predictions)*testClasses))
+            print("LOSS FOR CLASSIFICATION: " + str(loss))
+            self.losses.append(loss)
+        else:
+            # Mean Squared Error for Regression
+            loss = (1/numSamples)*np.sum(error**2)
+            print("LOSS FOR REGRESSION: " + str(loss))
+            self.losses.append(loss)
+
         print("ERROR AVG")
         print(errorAvg)
         self.losses.append(errorAvg)
