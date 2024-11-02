@@ -219,6 +219,7 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
+        self.losses = []
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
         batches = self.network.createBatches(trainData)
@@ -262,6 +263,7 @@ class Learner:
                 #print("Predicted: " + str(output[i]) + " Actual: " + str(testClasses[i]))
                 classifications.addTrueClass([testClasses[i], output[i]])
                 classifications.addConfusion(self.classificationAccuracy(testClasses[i], output[i]))
+                classifications.addLoss(self.losses)
         elif(self.classificationType == "regression"):
             #print("OUTPUT: ")
             #print(output)
@@ -270,6 +272,7 @@ class Learner:
                 #print("Predicted: " + str(output[0][i]) + " Actual: " + str(testClasses[i]))
                 classifications.addTrueClass([testClasses[i], output[0][i]])
                 classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[0][i]))
+                classifications.addLoss(self.losses)
 
         return classifications
 
