@@ -10,10 +10,12 @@ class Cleaner:
         # ADDRESS NULL VALUES WHERE COLUMNS/ROWS NEED TO BE REMOVED
         # If true class is unknown, drop the row
         cleanedData = dataFrame.dropna(subset=[classCol])
-        # Drop any rows where all values are null
-        cleanedData = cleanedData.dropna(how = 'all')
+        subsetColumns = [col for col in cleanedData.columns if col != classCol]
         # Columns must have 70% of their values for rows to remain in dataset
         cleanedData = cleanedData.dropna(axis=1, thresh = math.floor(0.70*cleanedData.shape[0]))
+
+        # Drop any rows where all values are null
+        cleanedData = cleanedData.dropna(how = 'all', subset=subsetColumns)
 
         # Remove unnecessary columns (i.e., ID columns)
         if len(dropColumns) > 0:

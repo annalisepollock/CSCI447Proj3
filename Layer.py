@@ -3,6 +3,9 @@ from Network import LayerName
 
 class Layer:
     def __init__ (self, size, nextSize, name, batchSize, classes = [], classificationType=""):
+        size = int(size)
+        nextSize = int(nextSize)
+        batchSize = int(batchSize)
         self.weights = np.random.uniform(-0.01, 0.01, (nextSize, size))
         self.prevWeights = np.zeros_like(self.weights) # to track convergence
         self.prevUpdate = np.zeros_like(self.weights)
@@ -19,6 +22,7 @@ class Layer:
         self.prev = previousLayer
 
     def setBatchSize(self, batchSize):
+        batchSize = int(batchSize)
         self.activations = np.empty((len(self.activations), batchSize))
     def getNext(self):
         return self.next
@@ -48,13 +52,13 @@ class Layer:
     #takes a list of numpy arrays which are the updates 
     def forwardPass(self, nodeUpdates):
         #update activation values 
-        print("Layer: " + str(self.name.name))
-        print("Node Updates: ")
-        print(nodeUpdates)
-        print()
-        print("WEIGHTS:")
-        print(self.weights)
-        print()
+        #print("Layer: " + str(self.name.name))
+        #print("Node Updates: ")
+        #print(nodeUpdates)
+        #print()
+        #print("WEIGHTS:")
+        #print(self.weights)
+        #print()
         for i in range(len(nodeUpdates)):
             self.activations[i] = nodeUpdates[i]
 
@@ -64,18 +68,18 @@ class Layer:
         #calculate values for the next layer
         elif(self.next.name == LayerName.Output):
             newActivations = np.array(np.dot(self.weights, self.activations))
-            print("Next Level Activations: ")
-            print(newActivations)
-            print()
+            #print("Next Level Activations: ")
+            #print(newActivations)
+            #print()
         else:
             newActivations = np.array(np.dot(self.weights, self.activations))
-            print("Next Level Activations before Sigmoid: ")
-            print(newActivations)
-            print()
+            #print("Next Level Activations before Sigmoid: ")
+            #print(newActivations)
+            #print()
             newActivations = self.sigmoid(newActivations)
-            print("Next Level Activations: ")
-            print(newActivations)
-            print()
+            #print("Next Level Activations: ")
+            #print(newActivations)
+            #print()
         
         return newActivations
     

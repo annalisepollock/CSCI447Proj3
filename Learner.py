@@ -13,7 +13,6 @@ class Learner:
         self.testData = data.sample(frac=0.1)
         self.data = data.drop(self.testData.index)
         self.losses = []
-        self.classificationInfos = []
         self.classPlace = classPlace
         self.errors = []
         self.classificationType = classificationType
@@ -32,7 +31,10 @@ class Learner:
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
         self.network = self.tuneData()
-    
+
+    def getFolds(self):
+        return self.folds   
+
     def setNetwork(self, network): # remove later after testing
         self.network = network
     
@@ -60,37 +62,54 @@ class Learner:
         momentumSet = False
         learningRateSet = False
         foldIndex = 0
+        print("TRAINING MOMENTUM")
         while not momentumSet:
+            print("training momentum", str(self.momentum))
             fold = self.folds[foldIndex % len(self.folds)]
-            if self.momentum == 0.5:
+            if self.momentum <= 0.5:
                 momentumSet = True
+                self.momentum = 0.5
                 break
             self.train(self.data.drop(fold.index))
             if self.checkOscillation(self.losses):
-                self.momentum -= 0.05
+                self.momentum -= 0.1
+            else:
+                momentumSet = True
+            foldIndex += 1
+            
+        print("TRAINING LEARNING RATE")
+
         while not learningRateSet:
-            if self.learningRate == 0.00001:
+            if self.learningRate == 0.0001:
                 learningRateSet = True
                 break
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             if self.checkOscillation(self.losses):
                 self.learningRate = self.learningRate / 10
+            else:
+                learningRateSet = True
+            foldIndex += 1
+        
         nueronsPerLayer = self.data.shape[0]
-        nueronValues = np.linspace(20, nueronsPerLayer, 5)
+        nueronValues = np.linspace(20, nueronsPerLayer, 5).astype(int)
         accuracy = 0
         bestNuerons = 0
+        print("TRAINING NEURONS PER LAYER")
         for nuerons in nueronValues:
             self.neuronsPerLayer = nuerons
             self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             output = self.test(self.testData)
-            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            print("OUTPUT")
+            print(output)
+            foldAccuracy = (output[0].getTP() + output[0].getTN()) / (output[0].getTP() + output[0].getTN() + output[0].getFP() + output[0].getFN())
             if(foldAccuracy > accuracy):
                 accuracy = foldAccuracy
                 bestNuerons = nuerons
+            foldIndex += 1
         self.neuronsPerLayer = bestNuerons
-        batchSizes = np.linspace(10, 100, 5)
-
+        batchSizes = np.linspace(10, 100, 5).astype(int)
+        print("TRAINING BATCH SIZE")
         accuracy = 0
         bestBatchSize = 0
         for batchSize in batchSizes:
@@ -98,10 +117,11 @@ class Learner:
             self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             output = self.test(self.testData)
-            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            foldAccuracy = (output[0].getTP() + output[0].getTN()) / (output[0].getTP() + output[0].getTN() + output[0].getFP() + output[0].getFN())
             if(foldAccuracy > accuracy):
                 accuracy = foldAccuracy
                 bestBatchSize = batchSize
+            foldIndex += 1
         self.batchSize = bestBatchSize
         print("BEST MOMENTUM:")
         print(str(self.momentum))
@@ -174,7 +194,7 @@ class Learner:
         if printSteps == True:
             print("Running cross validation with stratification...")
         dataChunks = [None] * 10
-        binLabels, binEdges = pd.qcut(data[targetColumn], q=10, retbins=True, labels=False)
+        binLabels, binEdges = pd.qcut(data[targetColumn], q=10, retbins=True, labels=False, duplicates='drop')
         uniqueBins = np.unique(binLabels)
         for binLabel in uniqueBins:
             print("Creating a subset of data for bin " + str(binLabel))
@@ -202,21 +222,16 @@ class Learner:
         converged = False
         #while self.network.checkConvergence() == False: --> USE ONCE CONVERGENCE FULLY IMPLEMENTED
         for i in range(50):
-            print("BATCH")
+            #print("BATCH")
             batch = batches[batchIndex % len(batches)]
-            print(batch)
-            print()
+            #print(batch)
+            #print()
             testClasses = batch[self.classPlace].to_numpy()
             testData = batch.drop(columns=[self.classPlace])
-            print("Test data:")
-            print(testData)
-            zScoreTestData = zscore(testData)
-            print("Z-Scored Test Data:")
-            print(zScoreTestData)
-            output = self.forwardPass(zScoreTestData)
-            print("OUTPUT: ")
-            print(output)
-            print()
+            output = self.forwardPass(testData)
+            #print("OUTPUT: ")
+            #print(output)
+            #print()
             if(self.classificationType == "classification"):
                 output = output[1]
                 oneHot = np.zeros((len(testClasses), len(self.classes)))
@@ -228,23 +243,32 @@ class Learner:
                 self.backwardPass(testClasses)
 
     def test(self, testData):
+        classificationInfos = []
+        #print("TEST DATA")
+        #print(testData)
         self.network.setBatchSize(len(testData))
         classifications = ClassificationInfo.ClassificationInfo()
         testClasses = testData[self.classPlace].to_numpy()
+        #print("TEST CLASSES")
+        #print(testClasses)
         testData = testData.drop(columns=[self.classPlace])
-        output = self.forwardPass(zscore(testData))
+        output = self.forwardPass(testData)
         if(self.classificationType == "classification"):
             output = output[0]
             for i in range(len(output)):
-                print("Predicted: " + str(output[i]) + " Actual: " + str(testClasses[i]))
+                #print("Predicted: " + str(output[i]) + " Actual: " + str(testClasses[i]))
                 classifications.addTrueClass([testClasses[i], output[i]])
                 classifications.addConfusion(self.classificationAccuracy(testClasses[i], output[i]))
         elif(self.classificationType == "regression"):
-            for i in range(len(output)):
-                print("Predicted: " + str(output[i]) + " Actual: " + str(testClasses[i]))
-                classifications.addTrueClass([testClasses[i], output[i]])
-                classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[i]))
-        self.classificationInfos.append(classifications)
+            #print("OUTPUT: ")
+            #print(output)
+            #print()
+            for i in range(len(output[0])):
+                #print("Predicted: " + str(output[0][i]) + " Actual: " + str(testClasses[i]))
+                classifications.addTrueClass([testClasses[i], output[0][i]])
+                classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[0][i]))
+        classificationInfos.append(classifications)
+        return classificationInfos
 
 
     def classificationAccuracy(self, trueClass, predClass):
@@ -276,89 +300,91 @@ class Learner:
         return self.network.forwardPass(batch)
 
     def backwardPass(self, testClasses):
-        print("BACKWARD PASS...")
-        print("OUTPUT LAYER: ")
+        #print("BACKWARD PASS...")
+        #print("OUTPUT LAYER: ")
         currLayer = self.network.getOutputLayer()
-        print(currLayer.activations)
-        print("TEST CLASSES: ")
-        print(testClasses)
-        print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
-        # calculate error (targets - predictions)
+        #print(currLayer.activations)
+        #print("TEST CLASSES: ")
+        #print(testClasses)
+        #print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
+        #calculate error (targets - predictions)
         error = testClasses - currLayer.activations
         errorAvg = np.mean(error, axis=0)
-        print("ERROR AVG")
-        print(errorAvg)
+        #print("ERROR AVG")
+        #print(errorAvg)
         self.losses.append(errorAvg)
 
-        print("MULTIPLY ERROR")
-        print(error)
-        print("BY PREV ACTIVATIONS")
-        print(currLayer.prev.activations.T)
-        print("PREVIOUS WEIGHTS:")
-        print(currLayer.prev.weights)
+        #print("MULTIPLY ERROR")
+        #print(error)
+        #print("BY PREV ACTIVATIONS")
+        #print(currLayer.prev.activations.T)
+        #print("PREVIOUS WEIGHTS:")
+        #print(currLayer.prev.weights)
 
         # weight update for output layer
         outputWeightUpdate = self.learningRate * np.dot(error, currLayer.prev.activations.T) + self.momentum * currLayer.prev.prevUpdate
 
-        print("\nWEIGHT UPDATE:")
-        print(outputWeightUpdate)
+        #print("\nWEIGHT UPDATE:")
+        #print(outputWeightUpdate)
 
         hiddenLayer = currLayer.getPrev()
         # if there are more than just the input and output layers...move through each layer and update weights
         while str(hiddenLayer.name) != str(self.network.getInputLayer().name):
             # apply hidden layer weight update rule
-            print("\nCALCULATE WEIGHT UPDATE  " + str(hiddenLayer.name) + " LAYER...")
+            #print("\nCALCULATE WEIGHT UPDATE  " + str(hiddenLayer.name) + " LAYER...")
 
-            print("PREVIOUS WEIGHTS: ")
-            print(hiddenLayer.prev.weights)
+            #print("PREVIOUS WEIGHTS: ")
+            #print(hiddenLayer.prev.weights)
 
-            print("PROPAGATED ERROR...")
-            print("\nOUTPUTWEIGHTUPDATE")
-            print(outputWeightUpdate)
-            print("ERROR")
-            print(error)
-            print("HIDDEN LAYER ACTIVATIONS")
-            print(hiddenLayer.activations)
+            #print("PROPAGATED ERROR...")
+            #print("\nOUTPUTWEIGHTUPDATE")
+            #print(outputWeightUpdate)
+            #print("ERROR")
+            #print(error)
+            #print("HIDDEN LAYER ACTIVATIONS")
+            #print(hiddenLayer.activations)
 
-            print("HIDDEN LAYER PREVIOUS ACTIVATIONS")
-            print(hiddenLayer.prev.activations)
+            #print("HIDDEN LAYER PREVIOUS ACTIVATIONS")
+            #print(hiddenLayer.prev.activations)
 
             propagatedError = np.dot(hiddenLayer.weights.T, error) * hiddenLayer.activations * (
                     1 - hiddenLayer.activations)
 
-            print("PROPAGATED ERROR")
-            print(propagatedError)
+            #print("PROPAGATED ERROR")
+            #print(propagatedError)
             # calculate hidden layer weight update
             hiddenWeightUpdate = self.learningRate * np.dot(propagatedError, hiddenLayer.prev.activations.T) + self.momentum * hiddenLayer.prev.prevUpdate
-            print("\nWEIGHT UPDATE:")
-            print(hiddenWeightUpdate)
+            #print("\nWEIGHT UPDATE:")
+            #print(hiddenWeightUpdate)
 
             # apply weight update
             hiddenLayer.prev.prevWeights = hiddenLayer.prev.weights
             hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate
             hiddenLayer.prev.prevUpdate = hiddenWeightUpdate
-            print("\nNEW WEIGHTS:")
-            print(hiddenLayer.prev.weights)
+            #print("\nNEW WEIGHTS:")
+            #print(hiddenLayer.prev.weights)
 
             # move to previous layer in network
             hiddenLayer = hiddenLayer.getPrev()
 
         # apply weight update to output layer weights
-        print("\nNEW WEIGHTS FOR OUTPUT:")
+        #print("\nNEW WEIGHTS FOR OUTPUT:")
         currLayer.prev.prevWeights = currLayer.prev.weights
         currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate
         currLayer.prev.prevUpdate = outputWeightUpdate
-        print(currLayer.prev.weights)
+        #print(currLayer.prev.weights)
 
     def run(self):
         count = 0
         self.classificationInfos = []
         for fold in self.folds:
             while count < 1:
+                print("FOLD: ")
+                print(fold)
                 trainData = self.data.drop(fold.index)
                 testData = fold
                 self.train(trainData)
                 self.test(testData)
-                count += 1
+            count += 1
 
         return self.classificationInfos

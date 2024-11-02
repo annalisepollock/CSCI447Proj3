@@ -11,7 +11,7 @@ import Layer
 class Network:
     def __init__ (self, hiddenLayers, neuronsPerLayer, inputSize, outputSize, classificationType, batchSize, classes=[]):
         self.layers = []
-        self.batchSize = batchSize
+        self.batchSize = int(batchSize)
         #create input layer
         self.inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
         self.layers.append(self.inputLayer)
@@ -48,7 +48,7 @@ class Network:
         self.hiddenLayers = hiddenLayers
     
     def setBatchSize(self, batchSize):
-        self.batchSize = batchSize
+        self.batchSize = int(batchSize)
         for layer in self.layers:
             layer.setBatchSize(batchSize)
     
@@ -80,9 +80,9 @@ class Network:
         for feature in featureNames:
             features.append(batch[feature].values)
         features = np.array(features)
-        print("Features: ")
-        print(features)
-        print()
+        #print("Features: ")
+        #print(features)
+        #print()
         for layer in self.layers:
             features = layer.forwardPass(features)
         return features
