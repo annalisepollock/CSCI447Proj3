@@ -4,8 +4,6 @@ import pandas as pd
 import numpy as np
 import ClassificationInfo
 from ClassificationInfo import Accuracy
-from scipy.stats import zscore
-import time
 
 class Learner: 
 
