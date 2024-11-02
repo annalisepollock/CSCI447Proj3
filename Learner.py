@@ -31,10 +31,7 @@ class Learner:
         self.network = self.tuneData()
 
     def getFolds(self):
-        return self.folds   
-
-    def setNetwork(self, network): # remove later after testing
-        self.network = network
+        return self.folds
     
     def setTestClass(self, testClass):
         self.testClass = testClass
@@ -222,14 +219,13 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
-        self.losses = []
-        if(self.network.getBatchSize() != self.batchSize):
+        if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
         converged = False
         #while self.network.checkConvergence() == False: --> USE ONCE CONVERGENCE FULLY IMPLEMENTED
-        for i in range(50):
+        for i in range(10):
             #print("BATCH")
             batch = batches[batchIndex % len(batches)]
             #print(batch)
@@ -307,7 +303,7 @@ class Learner:
         return self.network.forwardPass(batch)
 
     def backwardPass(self, testClasses):
-        #print("BACKWARD PASS...")
+        print("BACKWARD PASS...")
         #print("OUTPUT LAYER: ")
         currLayer = self.network.getOutputLayer()
         #print(currLayer.activations)
