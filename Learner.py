@@ -307,28 +307,38 @@ class Learner:
 
     def backwardPass(self, testClasses):
         print("BACKWARD PASS...")
-        #print("OUTPUT LAYER: ")
+        print("OUTPUT LAYER: ")
         currLayer = self.network.getOutputLayer()
-        #print(currLayer.activations)
-        #print("TEST CLASSES: ")
-        #print(testClasses)
-        #print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
-        #calculate error (targets - predictions)
+        print(currLayer.activations)
+        print("TEST CLASSES: ")
+        print(testClasses)
+        print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
+        # calculate error (targets - predictions)
         error = testClasses - currLayer.activations
         errorAvg = np.mean(error, axis=0)
+        numSamples = testClasses.shape[1]
+
+        epsilon = 1e-10  # small value to avoid log(0)
+        predictions = np.clip(currLayer.activations, epsilon, 1 - epsilon)  # clip values for numerical stability
+
+        if self.classificationType == "classification":
+            # Cross-Entropy Loss for Classification
+            loss = -(1 / numSamples) * (np.sum(np.log(predictions) * testClasses))
+            print("LOSS FOR CLASSIFICATION: " + str(loss))
+            self.losses.append(loss)
+        else:
+            # Mean Squared Error for Regression
+            loss = (1 / numSamples) * np.sum(error ** 2)
+            print("LOSS FOR REGRESSION: " + str(loss))
+            self.losses.append(loss)
+
         #print("ERROR AVG")
         #print(errorAvg)
-        self.losses.append(errorAvg)
-
-        #print("MULTIPLY ERROR")
-        #print(error)
-        #print("BY PREV ACTIVATIONS")
-        #print(currLayer.prev.activations.T)
-        #print("PREVIOUS WEIGHTS:")
-        #print(currLayer.prev.weights)
+        #self.losses.append(errorAvg)
 
         # weight update for output layer
-        outputWeightUpdate = self.learningRate * np.dot(error, currLayer.prev.activations.T) + self.momentum * currLayer.prev.prevUpdate
+        outputWeightUpdate = self.learningRate * np.dot(error,
+                                                        currLayer.prev.activations.T) + self.momentum * currLayer.prev.prevUpdate
 
         #print("\nWEIGHT UPDATE:")
         #print(outputWeightUpdate)
