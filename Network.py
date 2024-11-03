@@ -39,10 +39,10 @@ class Network:
 
             # tolerance default = 0 -> no difference permitted to be considered convergence
             # other options: 0.00005, 0.00003, 0.00008, 0.00001, etc.
-            if np.any(difference <= tolerance): # if all weight values have changed within tolerance permitted...
-                return True # converged
-            else:
+            if np.any(difference > tolerance): # if all weight values have changed within tolerance permitted...
                 return False # not converged
+            else:
+                return True # converged
 
     def setHiddenLayers(self, hiddenLayers):
         self.hiddenLayers = hiddenLayers
