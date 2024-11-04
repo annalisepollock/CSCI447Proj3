@@ -16,28 +16,19 @@ def main():
     breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
     breastCancerTest = breastCancerClean.sample(frac=0.5)
-    testLearner = Learner.Learner(breastCancerTest, "classification", "Class")
-    classifications = testLearner.run()
-    for classification in classifications:
+    breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
+    breastCancerClassifications = breastCancerLearner.run()
+    for classification in breastCancerClassifications:
         classification.printAccuracy()
         print()
 
-    '''
-    print("GLASS")
+    '''print("GLASS")
     glassData =  fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
     glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
     glassLearner = Learner.Learner(glassClean, "classification", 'Type_of_glass')
-    hiddenLayers = 1
-    neuronsPerLayer = glassClean.shape[1] - 7
-    inputSize = glassClean.shape[1] - 1
-    outputSize = glassClean['Type_of_glass'].nunique()
-    classification = "classification"
-    batchSize = 10
-    classes = glassClean['Type_of_glass'].unique()
-    classifications = glassLearner.run()
-    classifications = testLearner.run()
-    for classification in classifications:
+    glassClassifications = glassLearner.run()
+    for classification in glassClassifications:
         classification.printAccuracy()
         print()
     print()
@@ -47,36 +38,24 @@ def main():
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
     soybeanClean = cleaner.clean(soybeanDataFrame, [], 'class')
     soybeanLearner = Learner.Learner(soybeanClean, "classification", 'class')
-    folds = soybeanLearner.getFolds()
-    hiddenLayers = 1
-    neuronsPerLayer = soybeanClean.shape[1] - 1
-    inputSize = soybeanClean.shape[1] - 1
-    outputSize = soybeanClean['class'].nunique()
-    classification = "classification"
-    batchSize = 10
-    classes = soybeanClean['class'].unique()
-    soybeanLeaner = Network.Network(hiddenLayers, neuronsPerLayer, inputSize, outputSize, classification, batchSize, classes)
-    soybeanLearner.setNetwork(soybeanLeaner)
-    soybeanLearner.run()
-    print()
+    soybeanClassifications = soybeanLearner.run()
+    for classification in soybeanClassifications:
+        classification.printAccuracy()
+        print()
+    print()'''
     
-    
-    print("ABALONE")
+    '''print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
     abaloneLearner = Learner.Learner(abaloneClean, "regression", 'Rings')
-    hiddenLayers = 1
-    neuronsPerLayer = abaloneClean.shape[1] - 1
-    inputSize = abaloneClean.shape[1] - 1
-    outputSize = 1
-    classification = "regression"
-    batchSize = 10
-    abaloneNetwork = Network.Network(hiddenLayers, neuronsPerLayer, inputSize, outputSize, classification, batchSize)
-    abaloneLearner.setNetwork(abaloneNetwork)
-    abaloneLearner.run()
+    abaloneClassifications = abaloneLearner.run()
+    for classification in abaloneClassifications:
+        classification.printAccuracy()
+        print()
+    print()'''
     
-    print("COMPUTER HARDWARE")
+    '''print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')

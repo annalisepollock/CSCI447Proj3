@@ -12,6 +12,7 @@ class ClassificationInfo:
         self.FN = 0
         self.TP = 0
         self.TN = 0
+        self.loss = []
 
     def addTrueClass(self, trueClass):
         self.trueClasses.append(trueClass)

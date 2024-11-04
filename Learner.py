@@ -12,7 +12,6 @@ class Learner:
         self.data = data.drop(self.testData.index)
         self.losses = []
         self.classPlace = classPlace
-        self.errors = []
         self.classificationType = classificationType
         if( classificationType == "classification"):
             self.folds  = self.crossValidateClassification(self.data, classPlace)
@@ -220,13 +219,13 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
-        self.losses = []
+        #self.losses = []
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
         batchesFinished = False
-        while not self.network.checkConvergence(.005) and not batchesFinished:
+        while not self.network.checkConvergence(.001) and not batchesFinished:
         #for i in range(10):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
@@ -267,7 +266,7 @@ class Learner:
                 #print("Predicted: " + str(output[i]) + " Actual: " + str(testClasses[i]))
                 classifications.addTrueClass([testClasses[i], output[i]])
                 classifications.addConfusion(self.classificationAccuracy(testClasses[i], output[i]))
-                classifications.addLoss(self.losses)
+                classifications.addLoss(self.losses.copy())
         elif(self.classificationType == "regression"):
             #print("OUTPUT: ")
             #print(output)
@@ -276,7 +275,7 @@ class Learner:
                 #print("Predicted: " + str(output[0][i]) + " Actual: " + str(testClasses[i]))
                 classifications.addTrueClass([testClasses[i], output[0][i]])
                 classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[0][i]))
-                classifications.addLoss(self.losses)
+                classifications.addLoss(self.losses.copy())
         print("RETURN TYPE", type(classifications))
         return classifications
 
