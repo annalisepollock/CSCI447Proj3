@@ -31,7 +31,11 @@ class Learner:
         self.network = self.tuneData()
     
     def resetNetwork(self):
-        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+        if self.classificationType == "classification":
+            outputSize = len(self.classes)
+        else:
+            outputSize = 1
+        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
     def getFolds(self):
         return self.folds
     
@@ -55,7 +59,11 @@ class Learner:
     def tuneData(self):
         self.momentum = 0.9
         self.learningRate = 0.1
-        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+        if self.classificationType == "classification":
+            outputSize = len(self.classes)
+        else:
+            outputSize = 1
+        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
         momentumSet = False
         learningRateSet = False
         foldIndex = 0
@@ -87,30 +95,39 @@ class Learner:
             foldIndex += 1
         
         nueronsPerLayer = self.data.shape[0]
+        print("NUERONS PER LAYER")
+        print(nueronsPerLayer)
+        print()
         nueronValues = np.linspace(20, nueronsPerLayer, 5).astype(int)
         accuracy = 0
         bestNuerons = 0
         print("TRAINING NEURONS PER LAYER")
         for nuerons in nueronValues:
             self.neuronsPerLayer = nuerons
-            self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+            print("FEATURES")
+            print(self.features)
+            self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             output = self.test(self.testData)
             print("OUTPUT")
             print(output)
             foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            print("FOLD ACCURACY")
+            print(foldAccuracy)
             if(foldAccuracy > accuracy):
                 accuracy = foldAccuracy
                 bestNuerons = nuerons
             foldIndex += 1
         self.neuronsPerLayer = bestNuerons
+        if self.neuronsPerLayer == 0:
+            self.neuronsPerLayer = self.data.shape[0] - 10
         batchSizes = np.linspace(10, 100, 5).astype(int)
         print("TRAINING BATCH SIZE")
         accuracy = 0
         bestBatchSize = 0
         for batchSize in batchSizes:
             self.batchSize = batchSize
-            self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+            self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             output = self.test(self.testData)
             foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
@@ -119,6 +136,8 @@ class Learner:
                 bestBatchSize = batchSize
             foldIndex += 1
         self.batchSize = bestBatchSize
+        if self.batchSize == 0:
+            self.batchSize = int(self.data.shape[0] / 10)
         print("BEST MOMENTUM:")
         print(str(self.momentum))
         print()
@@ -143,7 +162,7 @@ class Learner:
         print("Batch Size: ", str(self.batchSize))
         print("Classes: ", str(self.classes))
         print()
-        return Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
+        return Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
 
     def getNetwork(self):
         return self.network
@@ -320,13 +339,13 @@ class Learner:
         # calculate error (targets - predictions)
         error = testClasses - currLayer.activations
         errorAvg = np.mean(error, axis=0)
-        numSamples = testClasses.shape[1]
 
         epsilon = 1e-10  # small value to avoid log(0)
         predictions = np.clip(currLayer.activations, epsilon, 1 - epsilon)  # clip values for numerical stability
 
         if self.classificationType == "classification":
             # Cross-Entropy Loss for Classification
+            numSamples = testClasses.shape[1]
             loss = -(1 / numSamples) * (np.sum(np.log(predictions) * testClasses))
             print("LOSS FOR CLASSIFICATION: " + str(loss))
             self.losses.append(loss)
@@ -334,6 +353,8 @@ class Learner:
             print(self.losses)
         else:
             # Mean Squared Error for Regression
+            print(testClasses.shape)
+            numSamples = testClasses.shape[0]
             loss = (1 / numSamples) * np.sum(error ** 2)
             print("LOSS FOR REGRESSION: " + str(loss))
             self.losses.append(loss)

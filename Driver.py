@@ -9,7 +9,9 @@ import warnings
 
 def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
+    
     cleaner = Cleaner.Cleaner()
+    '''
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData =  fetch_ucirepo(id=15)
@@ -22,7 +24,6 @@ def main():
         classification.printAccuracy()
         print()
 
-    '''
     print("GLASS")
     glassData =  fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
@@ -76,21 +77,19 @@ def main():
     abaloneLearner.setNetwork(abaloneNetwork)
     abaloneLearner.run()
     
+    '''
     print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
     computerLearner = Learner.Learner(computerClean, "regression", 'ERP')
-    hiddenLayers = 1
-    neuronsPerLayer = computerClean.shape[1] - 1
-    inputSize = computerClean.shape[1] - 1
-    outputSize = 1
-    classification = "regression"
-    batchSize = 10
-    computerLeaner = Network.Network(hiddenLayers, neuronsPerLayer, inputSize, outputSize, classification, batchSize)
-    computerLearner.setNetwork(computerLeaner)
     computerLearner.run()
-    print()
+    classifications = computerLearner.run()
+    for classification in classifications:
+        classification.printAccuracy()
+        print()
+
+    '''
 
     print("FOREST FIRES")
     forestFiresData =  fetch_ucirepo(id=162)

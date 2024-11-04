@@ -20,6 +20,7 @@ class Network:
         #create hidden layers
         for i in range(hiddenLayers):
             if(i == hiddenLayers - 1):
+                print("Output Size: " + str(outputSize))
                 hiddenLayer = Layer.Layer(neuronsPerLayer, outputSize, LayerName.Hidden, batchSize)
             else:
                 hiddenLayer = Layer.Layer(neuronsPerLayer, neuronsPerLayer, LayerName.Hidden, batchSize)
