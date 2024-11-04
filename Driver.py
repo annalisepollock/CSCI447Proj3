@@ -11,7 +11,7 @@ def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
     
     cleaner = Cleaner.Cleaner()
-    '''
+
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData =  fetch_ucirepo(id=15)
@@ -24,7 +24,7 @@ def main():
         classification.printAccuracy()
         print()
 
-    print("GLASS")
+    '''print("GLASS")
     glassData =  fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
     glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
@@ -33,9 +33,9 @@ def main():
     for classification in glassClassifications:
         classification.printAccuracy()
         print()
-    print()
+    print()'''
     
-    print("SOYBEAN")
+    '''print("SOYBEAN")
     soybeanData =  fetch_ucirepo(id=91)
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
     soybeanClean = cleaner.clean(soybeanDataFrame, [], 'class')
@@ -44,9 +44,9 @@ def main():
     for classification in soybeanClassifications:
         classification.printAccuracy()
         print()
-    print()
+    print()'''
     
-    print("ABALONE")
+    '''print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
@@ -54,10 +54,10 @@ def main():
     abaloneClassifications = abaloneLearner.run()
     for classification in abaloneClassifications:
         classification.printAccuracy()
-        print()
+        print()'''
     
-    '''
-    print("COMPUTER HARDWARE")
+
+    '''print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
@@ -69,7 +69,7 @@ def main():
         print()
     '''
 
-    print("FOREST FIRES")
+    '''print("FOREST FIRES")
     forestFiresData =  fetch_ucirepo(id=162)
     forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
     forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
