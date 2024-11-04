@@ -1,5 +1,6 @@
 from enum import Enum
 import numpy as np
+import pandas as pd
 
 class LayerName(Enum): 
     Input = 0
@@ -59,6 +60,10 @@ class Network:
         batches = []
         for i in range(0, len(data), self.batchSize):
             batches.append(data[i:i + self.batchSize])
+
+            if len(batches[-1]) < self.batchSize:
+                batches.pop()
+
         print("Batches: ")
         print(batches) 
         return batches

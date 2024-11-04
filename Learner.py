@@ -58,6 +58,7 @@ class Learner:
         learningRateSet = False
         foldIndex = 0
         print("TRAINING MOMENTUM")
+        self.losses = []
         while not momentumSet:
             print("training momentum", str(self.momentum))
             fold = self.folds[foldIndex % len(self.folds)]
@@ -73,7 +74,7 @@ class Learner:
             foldIndex += 1
             
         print("TRAINING LEARNING RATE")
-
+        self.losses = []
         while not learningRateSet:
             if self.learningRate == 0.0001:
                 learningRateSet = True
@@ -219,24 +220,23 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
-        self.losses = []
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
-        converged = False
-        while not self.network.checkConvergence(.0005):
+        print(self.network.checkConvergence(.005))
+        while not self.network.checkConvergence(.005):
         #for i in range(10):
-            #print("BATCH")
+            print("BATCH")
             batch = batches[batchIndex % len(batches)]
-            #print(batch)
-            #print()
+            print(batch)
+            print()
             testClasses = batch[self.classPlace].to_numpy()
             testData = batch.drop(columns=[self.classPlace])
             output = self.forwardPass(testData)
-            #print("OUTPUT: ")
-            #print(output)
-            #print()
+            print("OUTPUT: ")
+            print(output)
+            print()
             if(self.classificationType == "classification"):
                 output = output[1]
                 oneHot = np.zeros((len(testClasses), len(self.classes)))
@@ -246,15 +246,16 @@ class Learner:
                 self.backwardPass(oneHot.T)
             else:
                 self.backwardPass(testClasses)
+            batchIndex += 1
 
     def test(self, testData):
-        #print("TEST DATA")
-        #print(testData)
+        print("TEST DATA")
+        print(testData)
         self.network.setBatchSize(len(testData))
         classifications = ClassificationInfo.ClassificationInfo()
         testClasses = testData[self.classPlace].to_numpy()
-        #print("TEST CLASSES")
-        #print(testClasses)
+        print("TEST CLASSES")
+        print(testClasses)
         testData = testData.drop(columns=[self.classPlace])
         output = self.forwardPass(testData)
         if(self.classificationType == "classification"):
@@ -273,7 +274,7 @@ class Learner:
                 classifications.addTrueClass([testClasses[i], output[0][i]])
                 classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[0][i]))
                 classifications.addLoss(self.losses)
-
+        print("RETURN TYPE", type(classifications))
         return classifications
 
 
@@ -326,11 +327,15 @@ class Learner:
             loss = -(1 / numSamples) * (np.sum(np.log(predictions) * testClasses))
             print("LOSS FOR CLASSIFICATION: " + str(loss))
             self.losses.append(loss)
+            print("APPENDING LOSS")
+            print(self.losses)
         else:
             # Mean Squared Error for Regression
             loss = (1 / numSamples) * np.sum(error ** 2)
             print("LOSS FOR REGRESSION: " + str(loss))
             self.losses.append(loss)
+            print("APPENDING LOSS")
+            print(self.losses)
 
         #print("ERROR AVG")
         #print(errorAvg)
@@ -391,15 +396,14 @@ class Learner:
         #print(currLayer.prev.weights)
 
     def run(self):
-        count = 0
         classificationInfos = []
+        self.losses = []
         for fold in self.folds:
-            print("FOLD: ")
-            print(fold)
             trainData = self.data.drop(fold.index)
             testData = fold
             self.train(trainData)
             classification = self.test(testData)
             classificationInfos.append(classification)
+            
 
         return classificationInfos
