@@ -12,6 +12,7 @@ def main():
     
     cleaner = Cleaner.Cleaner()
 
+
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData =  fetch_ucirepo(id=15)
@@ -19,13 +20,13 @@ def main():
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
     breastCancerTest = breastCancerClean.sample(frac=0.5)
     breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
-    breastCancerLearner.setHiddenLayers(2)
-    breastCancerClassifications = breastCancerLearner.run()
-    for classification in breastCancerClassifications:
-        classification.printAccuracy()
-        print()
-    '''
-    print("GLASS")
+    breastCancerLearner.setHiddenLayers(0)
+    #breastCancerClassifications = breastCancerLearner.run()
+    #for classification in breastCancerClassifications:
+        #classification.printAccuracy()
+        #print()
+
+    '''print("GLASS")
     glassData =  fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
     glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
@@ -34,9 +35,9 @@ def main():
     for classification in glassClassifications:
         classification.printAccuracy()
         print()
-    print()
-
-    print("SOYBEAN")
+    print()'''
+    
+    '''print("SOYBEAN")
     soybeanData =  fetch_ucirepo(id=91)
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
     soybeanClean = cleaner.clean(soybeanDataFrame, [], 'class')
@@ -45,9 +46,9 @@ def main():
     for classification in soybeanClassifications:
         classification.printAccuracy()
         print()
-    print()
+    print()'''
     
-    print("ABALONE")
+    '''print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
@@ -55,10 +56,10 @@ def main():
     abaloneClassifications = abaloneLearner.run()
     for classification in abaloneClassifications:
         classification.printAccuracy()
-        print()
+        print()'''
     
-    
-    print("COMPUTER HARDWARE")
+
+    '''print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')

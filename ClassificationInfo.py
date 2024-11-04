@@ -33,6 +33,7 @@ class ClassificationInfo:
         print("True Negatives: " + str(self.TN))
         print("False Positives: " + str(self.FP))
         print("False Negatives: " + str(self.FN))
+        print("Loss: " + str(self.loss))
 
     def addLoss(self, loss):
         self.loss = loss

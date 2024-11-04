@@ -8,9 +8,16 @@ from ClassificationInfo import Accuracy
 class Learner: 
 
     def __init__ (self, data, classificationType, classPlace):
+        # convergence testing
+        self.patience = 5
+        self.windowSize = 3
+        self.tolerance = 1e-1
+        self.losses = []
+        self.convergenceCount = 0
+        # end convergence testing
+
         self.testData = data.sample(frac=0.1)
         self.data = data.drop(self.testData.index)
-        self.losses = []
         self.classPlace = classPlace
         self.classificationType = classificationType
         if( classificationType == "classification"):
@@ -22,17 +29,17 @@ class Learner:
             raise ValueError("Invalid classification type")
         self.learningRate = 0.0001
         self.momentum = 0.9
-        self.hiddenLayers = 1
+        self.hiddenLayers = 2
         self.neuronsPerLayer = self.data.shape[0]
         self.batchSize = 10
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
         self.network = self.tuneData()
-    
+
     def setHiddenLayers(self, hiddenLayers):
         self.hiddenLayers = hiddenLayers
         self.resetNetwork()
-
+        self.network.printNetwork()
     def resetNetwork(self):
         if self.classificationType == "classification":
             outputSize = len(self.classes)
@@ -257,8 +264,7 @@ class Learner:
         print(self.network.getBatchSize())
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
-        batchesFinished = False
-        while not self.network.checkConvergence(.0005) and not batchesFinished:
+        while not self.checkConvergence() and batchIndex != len(batches)-1:
         #for i in range(10):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
@@ -407,10 +413,10 @@ class Learner:
 
             #print("HIDDEN LAYER PREVIOUS ACTIVATIONS")
             #print(hiddenLayer.prev.activations)
-            hiddenLayer.printLayer()
-            if(hiddenLayersSeen == 0):
-                propagatedError = np.dot(currLayer.prev.weights.T, error) * currLayer.activations * (1 - currLayer.activations)
-                hiddenWeightUpdate = self.learningRate * np.dot(propagatedError, hiddenLayer.prev.activations.T) + self.momentum * hiddenLayer.prev.prevUpdate
+
+            propagatedError = np.dot(hiddenLayer.weights.T, error) * hiddenLayer.activations * (
+                    1 - hiddenLayer.activations)
+            error = propagatedError
 
             #print("PROPAGATED ERROR")
             #print(propagatedError)
@@ -436,15 +442,39 @@ class Learner:
         currLayer.prev.prevUpdate = outputWeightUpdate
         #print(currLayer.prev.weights)
 
+    def checkConvergence(self):
+        if len(self.losses) < self.windowSize*2:
+            return False # not enough data to check convergence
+
+        # Calculate moving averages for the last two windows
+        recentAvg1 = np.mean(self.losses[-self.windowSize:])
+        recentAvg2 = np.mean(self.losses[-2 * self.windowSize:-self.windowSize])
+
+        # Check if the change in moving averages is below the tolerance
+        if abs(recentAvg1 - recentAvg2) < self.tolerance:
+            self.convergenceCount += 1
+            # If this condition is met over 'patience' epochs, consider converged
+            if self.convergenceCount >= self.patience:
+                return True
+        else:
+            # Reset counter if loss change exceeds tolerance
+            self.convergence_count = 0
+
+        return False
+
     def run(self):
         classificationInfos = []
+        foldCount = 0
         for fold in self.folds:
             self.resetNetwork()
+            self.losses = []
             trainData = self.data.drop(fold.index)
+            print("losses after training fold " + str(foldCount) + ": " + str(self.losses))
             testData = fold
             self.train(trainData)
             classification = self.test(testData)
             classificationInfos.append(classification)
+            foldCount+=1
             
 
         return classificationInfos

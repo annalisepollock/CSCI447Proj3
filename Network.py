@@ -14,20 +14,26 @@ class Network:
         self.layers = []
         self.batchSize = int(batchSize)
         #create input layer
-        self.inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
-        self.layers.append(self.inputLayer)
+        if  hiddenLayers == 0:
+            self.inputLayer = Layer.Layer(inputSize, outputSize, LayerName.Input, batchSize, classes, classificationType)
+            self.layers.append(self.inputLayer)
+            return
+        else:
+            self.inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
+            self.layers.append(self.inputLayer)
 
-        #create hidden layers
-        for i in range(hiddenLayers):
-            if(i == hiddenLayers - 1):
-                print("Output Size: " + str(outputSize))
-                hiddenLayer = Layer.Layer(neuronsPerLayer, outputSize, LayerName.Hidden, batchSize)
-            else:
-                hiddenLayer = Layer.Layer(neuronsPerLayer, neuronsPerLayer, LayerName.Hidden, batchSize)
-            self.layers.append(hiddenLayer)
+            #create hidden layers
+            for i in range(hiddenLayers):
+                if(i == hiddenLayers - 1):
+                    print("Output Size: " + str(outputSize))
+                    hiddenLayer = Layer.Layer(neuronsPerLayer, outputSize, LayerName.Hidden, batchSize)
+                else:
+                    hiddenLayer = Layer.Layer(neuronsPerLayer, neuronsPerLayer, LayerName.Hidden, batchSize)
+                self.layers.append(hiddenLayer)
         
         #create output layer
         self.outputLayer = Layer.Layer(outputSize, 0, LayerName.Output, batchSize, classes, classificationType)
+        print("APPENDING OUTPUT LAYER")
         self.layers.append(self.outputLayer)
 
         #connect layers
@@ -37,7 +43,7 @@ class Network:
 
     def checkConvergence(self, tolerance=0):
         for layer in self.layers:
-            difference = np.abs(layer.prevWeights - layer.weights) # neg/pos doesn't matter
+            difference = np.linalg.norm(layer.weights - layer.prevWeights) # neg/pos doesn't matter
 
             # tolerance default = 0 -> no difference permitted to be considered convergence
             # other options: 0.00005, 0.00003, 0.00008, 0.00001, etc.
@@ -76,6 +82,8 @@ class Network:
         return self.outputLayer
 
     def printNetwork(self):
+        print("PRINTING NETWORK")
+        print("Length layers: " + str(len(self.layers)))
         for layer in self.layers:
             layer.printLayer()
     
