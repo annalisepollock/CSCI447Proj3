@@ -29,7 +29,9 @@ class Learner:
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
         self.network = self.tuneData()
-
+    
+    def resetNetwork(self):
+        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, len(self.classes), self.classificationType, self.batchSize, self.classes)
     def getFolds(self):
         return self.folds
     
@@ -58,7 +60,6 @@ class Learner:
         learningRateSet = False
         foldIndex = 0
         print("TRAINING MOMENTUM")
-        self.losses = []
         while not momentumSet:
             print("training momentum", str(self.momentum))
             fold = self.folds[foldIndex % len(self.folds)]
@@ -219,17 +220,20 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
+        self.losses = []
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
-        print(self.network.checkConvergence(.005))
-        while not self.network.checkConvergence(.005):
+        batchesFinished = False
+        while not self.network.checkConvergence(.005) and not batchesFinished:
         #for i in range(10):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
             print(batch)
             print()
+            if batchIndex == len(batches) - 1:
+                batchesFinished = True
             testClasses = batch[self.classPlace].to_numpy()
             testData = batch.drop(columns=[self.classPlace])
             output = self.forwardPass(testData)
@@ -397,6 +401,7 @@ class Learner:
     def run(self):
         classificationInfos = []
         for fold in self.folds:
+            self.resetNetwork()
             trainData = self.data.drop(fold.index)
             testData = fold
             self.train(trainData)
