@@ -21,10 +21,10 @@ def main():
     breastCancerTest = breastCancerClean.sample(frac=0.5)
     breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
     breastCancerLearner.setHiddenLayers(0)
-    #breastCancerClassifications = breastCancerLearner.run()
-    #for classification in breastCancerClassifications:
-        #classification.printAccuracy()
-        #print()
+    breastCancerClassifications = breastCancerLearner.run()
+    for classification in breastCancerClassifications:
+        classification.printAccuracy()
+        print()
 
     '''print("GLASS")
     glassData =  fetch_ucirepo(id=42)

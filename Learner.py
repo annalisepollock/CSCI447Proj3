@@ -29,7 +29,7 @@ class Learner:
             raise ValueError("Invalid classification type")
         self.learningRate = 0.0001
         self.momentum = 0.9
-        self.hiddenLayers = 2
+        self.hiddenLayers = 0
         self.neuronsPerLayer = self.data.shape[0]
         self.batchSize = 10
         self.features = self.data.shape[1] - 1

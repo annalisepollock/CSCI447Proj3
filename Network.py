@@ -15,10 +15,11 @@ class Network:
         self.batchSize = int(batchSize)
         #create input layer
         if  hiddenLayers == 0:
+            print("HERE")
             self.inputLayer = Layer.Layer(inputSize, outputSize, LayerName.Input, batchSize, classes, classificationType)
             self.layers.append(self.inputLayer)
-            return
         else:
+            print("here")
             self.inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
             self.layers.append(self.inputLayer)
 
@@ -35,6 +36,11 @@ class Network:
         self.outputLayer = Layer.Layer(outputSize, 0, LayerName.Output, batchSize, classes, classificationType)
         print("APPENDING OUTPUT LAYER")
         self.layers.append(self.outputLayer)
+    
+        print("LAYERS: ")
+        for layer in self.layers:
+            layer.printLayer()
+            print()
 
         #connect layers
         for i in range(len(self.layers) - 1):
