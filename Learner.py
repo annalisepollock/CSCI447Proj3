@@ -24,7 +24,7 @@ class Learner:
             self.folds  = self.crossValidateClassification(self.data, classPlace)
         elif( classificationType == "regression"):
             self.folds = self.crossValidateRegression(self.data, classPlace)
-            self.accuracyThreshold = 0.05 * data[classPlace].mean()
+            self.accuracyThreshold = 0.3 * data[classPlace].mean()
         else:
             raise ValueError("Invalid classification type")
         self.learningRate = 0.0001
@@ -52,19 +52,15 @@ class Learner:
     def setTestClass(self, testClass):
         self.testClass = testClass
     
-    def checkOscillation(self, losses):
-        oscillations = 0 
-        for i in range(len(losses)):
-            loss = losses[i]
-            if(i == (len(losses) - 1)):
-                break
-            if(i != 0):
-                if np.any(losses[i] > losses[i - 1]):
-                    oscillations += 1
-        if oscillations > 5:
-            return True
-        else:
+    def checkOscillation(self, losses, window_size=5, threshold=3):
+        if len(losses) < window_size:
             return False
+        oscillations = 0
+        for i in range(1, window_size):
+            if (losses[-i] > losses[-(i + 1)] and losses[-(i + 2)] < losses[-(i + 1)]) or \
+           (losses[-i] < losses[-(i + 1)] and losses[-(i + 2)] > losses[-(i + 1)]):
+                oscillations += 1
+        return oscillations >= threshold
         
     def tuneData(self):
         self.momentum = 0.9
@@ -206,11 +202,14 @@ class Learner:
             print("Creating a subset of data for class " + str(uniqueVal) + " with size of " + str(classSubset.shape[0]))
             dataByClass[uniqueVal] = classSubset
 
-            numRows = math.floor(classSubset.shape[0] / 10) # of class instances per fold
+            numRows = math.ceil(classSubset.shape[0] / 10) # of class instances per fold
             print("Number of rows per fold: " + str(numRows))
 
             for i in range(9):
-                classChunk = classSubset.sample(n=numRows)
+                if(classSubset.shape[0] < numRows):
+                    classChunk = classSubset
+                else:
+                    classChunk = classSubset.sample(n=numRows)
                 if printSteps:
                     print("Number of values for class " + str(uniqueVal), " in fold " + str(i+1) + " is: " + str(classChunk.shape[0]))
                 if dataChunks[i] is None:
@@ -225,9 +224,9 @@ class Learner:
                 print("Number of values for class " + str(uniqueVal), " in fold " + str(10) + " is: " + str(classSubset.shape[0]))
             dataChunks[9] = pd.concat([dataChunks[9], classSubset])
 
-        if printSteps == True:
-            for i in range(len(dataChunks)):
-                print("Size of fold " + str(i+1) + " is " + str(dataChunks[i].shape[0]))
+        print("FOLDS")
+        for i in range(len(dataChunks)):
+            print("Size of fold " + str(i+1) + " is " + str(dataChunks[i].shape[0]))
 
         return dataChunks
 
@@ -443,7 +442,10 @@ class Learner:
         #print(currLayer.prev.weights)
 
     def checkConvergence(self):
+        print("CHECKING CONVERGENCE...")
+        print()
         if len(self.losses) < self.windowSize*2:
+            print("NOT ENOUGH DATA TO CHECK CONVERGENCE")
             return False # not enough data to check convergence
 
         # Calculate moving averages for the last two windows
@@ -467,9 +469,7 @@ class Learner:
         foldCount = 0
         for fold in self.folds:
             self.resetNetwork()
-            self.losses = []
             trainData = self.data.drop(fold.index)
-            print("losses after training fold " + str(foldCount) + ": " + str(self.losses))
             testData = fold
             self.train(trainData)
             classification = self.test(testData)

@@ -34,7 +34,24 @@ class ClassificationInfo:
         print("False Positives: " + str(self.FP))
         print("False Negatives: " + str(self.FN))
         print("Loss: " + str(self.loss))
+        if (self.TP + self.TN + self.FP + self.FN) == 0:
+            print("Fold empty")
+        elif (self.TP + self.TN) == 0:
+            print("Accuracy: 0")
+        else:
+            print("Accuracy: " + str((self.TP + self.TN)/(self.TP + self.TN + self.FP + self.FN)))
+        print()
 
+    #APPENDS TO THE CURRENT VALUES
+    def addTP(self, num):
+        self.TP += num
+    def addTN(self, num):
+        self.TN += num
+    def addFP(self, num):
+        self.FP += num
+    def addFN(self, num):
+        self.FN += num
+    
     def addLoss(self, loss):
         self.loss = loss
     def getLoss(self):

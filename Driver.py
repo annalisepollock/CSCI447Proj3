@@ -12,7 +12,7 @@ def main():
     
     cleaner = Cleaner.Cleaner()
 
-
+    '''
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData =  fetch_ucirepo(id=15)
@@ -25,30 +25,31 @@ def main():
     for classification in breastCancerClassifications:
         classification.printAccuracy()
         print()
-
-    '''print("GLASS")
+    print("GLASS")
     glassData =  fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
     glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
     glassLearner = Learner.Learner(glassClean, "classification", 'Type_of_glass')
+    #glassLearner.setHiddenLayers(1)
     glassClassifications = glassLearner.run()
     for classification in glassClassifications:
         classification.printAccuracy()
         print()
-    print()'''
+    print()
     
-    '''print("SOYBEAN")
+    print("SOYBEAN")
     soybeanData =  fetch_ucirepo(id=91)
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
     soybeanClean = cleaner.clean(soybeanDataFrame, [], 'class')
     soybeanLearner = Learner.Learner(soybeanClean, "classification", 'class')
+    soybeanLearner.setHiddenLayers(2)
     soybeanClassifications = soybeanLearner.run()
     for classification in soybeanClassifications:
         classification.printAccuracy()
         print()
-    print()'''
-    
-    '''print("ABALONE")
+    print()
+    '''
+    print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
@@ -56,7 +57,7 @@ def main():
     abaloneClassifications = abaloneLearner.run()
     for classification in abaloneClassifications:
         classification.printAccuracy()
-        print()'''
+        print()
     
 
     '''print("COMPUTER HARDWARE")
