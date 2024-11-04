@@ -120,12 +120,18 @@ class Learner:
         self.neuronsPerLayer = bestNuerons
         if self.neuronsPerLayer == 0:
             self.neuronsPerLayer = self.data.shape[0] - 10
-        batchSizes = np.linspace(10, 100, 5).astype(int)
+        foldIndex = len(self.folds) - 1
+        if self.data.drop(self.folds[foldIndex % len(self.folds)].index).shape[0] < 100:
+            batchSizes = np.linspace(3, 10, 5).astype(int)
+        else:
+            batchSizes = np.linspace(10, 100, 5).astype(int)
         print("TRAINING BATCH SIZE")
         accuracy = 0
         bestBatchSize = 0
         for batchSize in batchSizes:
             self.batchSize = batchSize
+            print("BATCH SIZE")
+            print(self.batchSize)
             self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
             self.train(self.data.drop(self.folds[foldIndex % len(self.folds)].index))
             output = self.test(self.testData)
@@ -241,10 +247,14 @@ class Learner:
         #self.losses = []
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
+        print("TRAINING DATA")
+        print(trainData)
+        print("BATCH SIZE")
+        print(self.network.getBatchSize())
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
         batchesFinished = False
-        while not self.network.checkConvergence(.001) and not batchesFinished:
+        while not self.network.checkConvergence(.05):
         #for i in range(10):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
@@ -324,7 +334,7 @@ class Learner:
                 return Accuracy.FP
     
     def forwardPass(self, batch):
-        print("FORWARD PASS")
+        print("FORWARD PASS...")
         return self.network.forwardPass(batch)
 
     def backwardPass(self, testClasses):

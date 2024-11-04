@@ -34,7 +34,7 @@ def main():
         classification.printAccuracy()
         print()
     print()
-
+    
     print("SOYBEAN")
     soybeanData =  fetch_ucirepo(id=91)
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
@@ -44,9 +44,9 @@ def main():
     for classification in soybeanClassifications:
         classification.printAccuracy()
         print()
-    print()'''
+    print()
     
-    '''print("ABALONE")
+    print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
@@ -55,8 +55,8 @@ def main():
     for classification in abaloneClassifications:
         classification.printAccuracy()
         print()
-    print()'''
     
+    '''
     print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
@@ -68,22 +68,18 @@ def main():
         classification.printAccuracy()
         print()
     '''
-    
+
     print("FOREST FIRES")
     forestFiresData =  fetch_ucirepo(id=162)
     forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
     forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
     forestLearner = Learner.Learner(forestClean, "regression", 'area')
-    hiddenLayers = 1
-    neuronsPerLayer = forestClean.shape[1] - 1
-    inputSize = forestClean.shape[1] - 1
-    outputSize = 1
-    classification = "regression"
-    batchSize = 10
-    forestLeaner = Network.Network(hiddenLayers, neuronsPerLayer, inputSize, outputSize, classification, batchSize)
-    forestLearner.setNetwork(forestLeaner)
-    forestLearner.run()
-    print()
+    classifications = forestLearner.run()
+    for classification in classifications:
+        classification.printAccuracy()
+        print()
     '''
+
+
 
 main()
