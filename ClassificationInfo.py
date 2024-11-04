@@ -51,9 +51,11 @@ class ClassificationInfo:
         self.FP += num
     def addFN(self, num):
         self.FN += num
-    
-    def addLoss(self, loss):
-        self.loss = loss
+    def addTrueClasses(self, newTrueClasses):
+        self.trueClasses.extend(newTrueClasses)
+    def addLoss(self, newLoss):
+        self.loss.extend(newLoss)
+
     def getLoss(self):
         return self.loss
     def getFP(self):
@@ -66,3 +68,4 @@ class ClassificationInfo:
         return self.TN
     def getTrueClasses(self): 
         return self.trueClasses
+
