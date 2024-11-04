@@ -29,6 +29,10 @@ class Learner:
         self.classes = self.data[classPlace].unique()
         self.network = self.tuneData()
     
+    def setHiddenLayers(self, hiddenLayers):
+        self.hiddenLayers = hiddenLayers
+        self.resetNetwork()
+
     def resetNetwork(self):
         if self.classificationType == "classification":
             outputSize = len(self.classes)
@@ -244,7 +248,7 @@ class Learner:
         return dataChunks
     
     def train(self, trainData):
-        #self.losses = []
+        self.losses = []
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
         print("TRAINING DATA")
@@ -254,7 +258,7 @@ class Learner:
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
         batchesFinished = False
-        while not self.network.checkConvergence(.05):
+        while not self.network.checkConvergence(.0005) and not batchesFinished:
         #for i in range(10):
             print("BATCH")
             batch = batches[batchIndex % len(batches)]
@@ -382,6 +386,9 @@ class Learner:
         #print(outputWeightUpdate)
 
         hiddenLayer = currLayer.getPrev()
+        print("HIDDEN LAYER: ")
+        print(type(hiddenLayer))
+        hiddenLayersSeen = 0
         # if there are more than just the input and output layers...move through each layer and update weights
         while str(hiddenLayer.name) != str(self.network.getInputLayer().name):
             # apply hidden layer weight update rule
@@ -400,9 +407,10 @@ class Learner:
 
             #print("HIDDEN LAYER PREVIOUS ACTIVATIONS")
             #print(hiddenLayer.prev.activations)
-
-            propagatedError = np.dot(hiddenLayer.weights.T, error) * hiddenLayer.activations * (
-                    1 - hiddenLayer.activations)
+            hiddenLayer.printLayer()
+            if(hiddenLayersSeen == 0):
+                propagatedError = np.dot(currLayer.prev.weights.T, error) * currLayer.activations * (1 - currLayer.activations)
+                hiddenWeightUpdate = self.learningRate * np.dot(propagatedError, hiddenLayer.prev.activations.T) + self.momentum * hiddenLayer.prev.prevUpdate
 
             #print("PROPAGATED ERROR")
             #print(propagatedError)

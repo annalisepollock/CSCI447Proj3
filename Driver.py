@@ -11,7 +11,7 @@ def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
     
     cleaner = Cleaner.Cleaner()
-    '''
+
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData =  fetch_ucirepo(id=15)
@@ -19,11 +19,12 @@ def main():
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
     breastCancerTest = breastCancerClean.sample(frac=0.5)
     breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
+    breastCancerLearner.setHiddenLayers(2)
     breastCancerClassifications = breastCancerLearner.run()
     for classification in breastCancerClassifications:
         classification.printAccuracy()
         print()
-
+    '''
     print("GLASS")
     glassData =  fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
@@ -34,7 +35,7 @@ def main():
         classification.printAccuracy()
         print()
     print()
-    
+
     print("SOYBEAN")
     soybeanData =  fetch_ucirepo(id=91)
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
@@ -56,18 +57,18 @@ def main():
         classification.printAccuracy()
         print()
     
-    '''
+    
     print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
     computerLearner = Learner.Learner(computerClean, "regression", 'ERP')
+    computerLearner.setHiddenLayers(2)
     computerLearner.run()
     classifications = computerLearner.run()
     for classification in classifications:
         classification.printAccuracy()
         print()
-    '''
 
     print("FOREST FIRES")
     forestFiresData =  fetch_ucirepo(id=162)
