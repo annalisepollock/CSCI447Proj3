@@ -74,7 +74,6 @@ class Learner:
             foldIndex += 1
             
         print("TRAINING LEARNING RATE")
-        self.losses = []
         while not learningRateSet:
             if self.learningRate == 0.0001:
                 learningRateSet = True
@@ -397,7 +396,6 @@ class Learner:
 
     def run(self):
         classificationInfos = []
-        self.losses = []
         for fold in self.folds:
             trainData = self.data.drop(fold.index)
             testData = fold
