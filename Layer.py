@@ -51,10 +51,20 @@ class Layer:
         return exp_values / sum_exp_values
     
     #takes a list of numpy arrays which are the updates 
-    def forwardPass(self, nodeUpdates):
+    def forwardPass(self, nodeUpdates, printSteps=False):
+        if(printSteps):
+            print("Layer: " + str(self.name))
+            print("Activations: ")
+            print(self.activations)
+            print()
+            print("Weights: ")
+            print(self.weights)
+            print()
+            print("Node Updates: ")
+            print(nodeUpdates)
+            print()
         for i in range(len(nodeUpdates)):
             self.activations[i] = nodeUpdates[i]
-
 
         if(self.name == LayerName.Output):
             newActivations = self.calculateOutput()
@@ -73,6 +83,10 @@ class Layer:
             #print("Next Level Activations: ")
             #print(newActivations)
             #print()
+        if(printSteps):
+            print("New Activations: ")
+            print(newActivations)
+            print()
         
         return newActivations
     
@@ -85,7 +99,7 @@ class Layer:
                 self.activations[:, i] = self.softmaxActivation(self.activations[:, i])
                 highestIndex = np.argmax(self.activations[:, i])
                 classifications[i] = self.classes[highestIndex]
-        print(self.activations)
-        print()
+        #print(self.activations)
+        #print()
         return classifications, self.activations
     

@@ -15,18 +15,15 @@ class Network:
         self.batchSize = int(batchSize)
         #create input layer
         if  hiddenLayers == 0:
-            print("HERE")
             self.inputLayer = Layer.Layer(inputSize, outputSize, LayerName.Input, batchSize, classes, classificationType)
             self.layers.append(self.inputLayer)
         else:
-            print("here")
             self.inputLayer = Layer.Layer(inputSize, neuronsPerLayer, LayerName.Input, batchSize)
             self.layers.append(self.inputLayer)
 
             #create hidden layers
             for i in range(hiddenLayers):
                 if(i == hiddenLayers - 1):
-                    print("Output Size: " + str(outputSize))
                     hiddenLayer = Layer.Layer(neuronsPerLayer, outputSize, LayerName.Hidden, batchSize)
                 else:
                     hiddenLayer = Layer.Layer(neuronsPerLayer, neuronsPerLayer, LayerName.Hidden, batchSize)
@@ -34,13 +31,7 @@ class Network:
         
         #create output layer
         self.outputLayer = Layer.Layer(outputSize, 0, LayerName.Output, batchSize, classes, classificationType)
-        print("APPENDING OUTPUT LAYER")
         self.layers.append(self.outputLayer)
-    
-        print("LAYERS: ")
-        for layer in self.layers:
-            layer.printLayer()
-            print()
 
         #connect layers
         for i in range(len(self.layers) - 1):
@@ -77,8 +68,6 @@ class Network:
             if len(batches[-1]) < self.batchSize:
                 batches.pop()
 
-        print("Batches: ")
-        print(batches) 
         return batches
 
     def getInputLayer(self):
@@ -93,16 +82,20 @@ class Network:
         for layer in self.layers:
             layer.printLayer()
     
-    def forwardPass(self, batch):
+    def forwardPass(self, batch, printSteps=False):
         # split batch into features
         featureNames = batch.columns
         features = []
         for feature in featureNames:
             features.append(batch[feature].values)
+        if printSteps:
+            print("SPLITTING BATCH INTO FEATURES")
+            print("Features: ")
+            print(features)
         features = np.array(features)
         #print("Features: ")
         #print(features)
         #print()
         for layer in self.layers:
-            features = layer.forwardPass(features)
+            features = layer.forwardPass(features, printSteps)
         return features

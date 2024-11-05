@@ -12,19 +12,46 @@ def main():
     
     cleaner = Cleaner.Cleaner()
 
-    '''
+    
     #IMPORT DATA SETS 
+    
     print("BREAST CANCER")
     breastCancerData =  fetch_ucirepo(id=15)
     breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
     breastCancerTest = breastCancerClean.sample(frac=0.5)
     breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
-    breastCancerLearner.setHiddenLayers(0)
     breastCancerClassifications = breastCancerLearner.run()
+    count = 0
+    print("BREAST CANCER FOLD 0 HIDDEN LAYERS")
     for classification in breastCancerClassifications:
-        classification.printAccuracy()
-        print()
+        if count == 0:
+            classification.printAccuracy()
+            count += 1
+            print()
+    breastCancerLearner.setHiddenLayers(1)
+    breastCancerClassifications = breastCancerLearner.run()
+    count = 0
+    print("BREAST CANCER FOLD 1 HIDDEN LAYERS")
+    for classification in breastCancerClassifications:
+        if count == 0:
+            classification.printAccuracy()
+            count += 1
+            print()
+    breastCancerLearner.setHiddenLayers(2)
+    breastCancerClassifications = breastCancerLearner.run(True)
+    count = 0
+    foldAccuracyTotal = 0
+    print("BREAST CANCER FOLD 2 HIDDEN LAYERS")
+    for classification in breastCancerClassifications:
+        if count == 0:
+            classification.printAccuracy()
+            count += 1
+            print()
+        foldAccuracyTotal += (classification.TP + classification.TN)/(classification.TP + classification.TN + classification.FP + classification.FN)
+    print("Average Accuracy: " + str(foldAccuracyTotal/10))
+    print()
+    '''
     print("GLASS")
     glassData =  fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
@@ -48,7 +75,7 @@ def main():
         classification.printAccuracy()
         print()
     print()
-    '''
+    
     print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
@@ -60,7 +87,7 @@ def main():
         print()
     
 
-    '''print("COMPUTER HARDWARE")
+    print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
@@ -78,9 +105,41 @@ def main():
     forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
     forestLearner = Learner.Learner(forestClean, "regression", 'area')
     classifications = forestLearner.run()
+    count = 0
+    print("FOREST FIRES FOLD 0 HIDDEN LAYERS")
     for classification in classifications:
-        classification.printAccuracy()
-        print()
+        if count == 0:
+            classification.printAccuracy()
+            count += 1
+            print()
+    forestLearner.setHiddenLayers(1)
+    classifications = forestLearner.run()
+    count = 0
+    print("FOREST FIRES FOLD 1 HIDDEN LAYERS")
+    for classification in classifications:
+        if count == 0:
+            classification.printAccuracy()
+            count += 1
+            print()
+    
+    forestLearner.setHiddenLayers(2)
+    classifications = forestLearner.run(True)
+    count = 0
+    foldAccuracyTotal = 0
+    print("FOREST FIRES FOLD 2 HIDDEN LAYERS")
+    for classification in classifications:
+        if count == 0:
+            classification.printAccuracy()
+            count += 1
+            print()
+        foldAccuracyTotal += (classification.TP + classification.TN)/(classification.TP + classification.TN + classification.FP + classification.FN)
+    print("Average Accuracy: " + str(foldAccuracyTotal/10))
+
+    print("SOYBEAN MODEL")
+    soybeanLearner.network.printNetwork()
+
+    print("COMPUTER HARDWARE MODEL")
+    computerLearner.network.printNetwork()
     '''
 
 
