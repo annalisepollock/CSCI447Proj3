@@ -12,8 +12,9 @@ import matplotlib.pyplot as plt
 
 def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
-
+    
     cleaner = Cleaner.Cleaner()
+    '''
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData = fetch_ucirepo(id=15)
@@ -54,18 +55,16 @@ def main():
     print("Average Accuracy: " + str(foldAccuracyTotal/10))
     print()
     
-    
     print("GLASS")
     glassData = fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
     glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
     glassLearner = Learner.Learner(glassClean, "classification", 'Type_of_glass')
+    classifications = glassLearner.run()
+    for classification in classifications:
+        classification.printAccuracy()
+        print()
 
-    glassInfo = classificationAndAccuracyAllLayers(3, glassLearner, glassClean, "Glass")
-
-    glassLayerFoldClassifications = glassInfo[0]  # 3 instances of arrays w/ 10 classification infos
-    glassTotalClassification = glassInfo[1]
-    glassTotalAccuracyStats = glassInfo[2]
 
     print("SOYBEAN")
     soybeanData =  fetch_ucirepo(id=91)
@@ -82,6 +81,7 @@ def main():
         print()
     print()
     
+    '''
     print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
@@ -91,6 +91,7 @@ def main():
     for classification in abaloneClassifications:
         classification.printAccuracy()
         print()
+    ''' 
     
 
     print("COMPUTER HARDWARE")
@@ -99,12 +100,6 @@ def main():
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
     computerLearner = Learner.Learner(computerClean, "regression", 'ERP')
     computerLearner.setHiddenLayers(2)
-
-    computerInfo = classificationAndAccuracyAllLayers(3, computerLearner, computerClean, "Computer Hardware")
-
-    computerLayerFoldClassifications = computerInfo[0]  # 3 instances of arrays w/ 10 classification infos
-    computerTotalClassification = computerInfo[1]
-    computerTotalAccuracyStats = computerInfo[2]
     
 
     print("FOREST FIRES")
@@ -144,6 +139,7 @@ def main():
             print()
         foldAccuracyTotal += (classification.TP + classification.TN)/(classification.TP + classification.TN + classification.FP + classification.FN)
     print("Average Accuracy: " + str(foldAccuracyTotal/10))
+    '''
     
     
 
