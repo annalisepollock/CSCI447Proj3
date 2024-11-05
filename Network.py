@@ -62,6 +62,7 @@ class Network:
 
     def createBatches(self, data):
         batches = []
+        #split data into an array of equal size batches
         for i in range(0, len(data), self.batchSize):
             batches.append(data[i:i + self.batchSize])
 
@@ -86,6 +87,8 @@ class Network:
         # split batch into features
         featureNames = batch.columns
         features = []
+        #split data into arrays with values from each feature
+        #this will be passed into input nodes 
         for feature in featureNames:
             features.append(batch[feature].values)
         if printSteps:
@@ -93,9 +96,6 @@ class Network:
             print("Features: ")
             print(features)
         features = np.array(features)
-        #print("Features: ")
-        #print(features)
-        #print()
         for layer in self.layers:
             features = layer.forwardPass(features, printSteps)
         return features

@@ -6,6 +6,7 @@ class Layer:
         size = int(size)
         nextSize = int(nextSize)
         batchSize = int(batchSize)
+        #INITIALIZE WEIGHTS BETWEEN SELF AND NEXT LAYER
         self.weights = np.random.uniform(-0.01, 0.01, (nextSize, size))
         self.prevWeights = np.zeros_like(self.weights) # to track convergence
         self.prevUpdate = np.zeros_like(self.weights)
@@ -24,6 +25,7 @@ class Layer:
     def setBatchSize(self, batchSize):
         batchSize = int(batchSize)
         self.activations = np.empty((len(self.activations), batchSize))
+        
     def getNext(self):
         return self.next
     def getPrev(self):
@@ -40,9 +42,11 @@ class Layer:
             print("Classes: " + str(self.classes))
         print("\n")
 
+    #APPLY SIGMOID ACTIVATION FUNCTION FOR HIDDEN LAYERS
     def sigmoid(self, values):
         return np.tanh(values)
 
+    #APPLY SOFTMAX ACTIVATION FUNCTION FOR OUTPUT LAYER
     def softmaxActivation(self, values):
         max_value = np.max(values)
         exp_values = np.exp(values - max_value)
@@ -54,8 +58,6 @@ class Layer:
     def forwardPass(self, nodeUpdates, printSteps=False):
         if(printSteps):
             print("Layer: " + str(self.name))
-            print("Activations: ")
-            print(self.activations)
             print()
             print("Weights: ")
             print(self.weights)
@@ -63,6 +65,7 @@ class Layer:
             print("Node Updates: ")
             print(nodeUpdates)
             print()
+        #RESET ACTIVATIONS
         for i in range(len(nodeUpdates)):
             self.activations[i] = nodeUpdates[i]
 
@@ -71,18 +74,11 @@ class Layer:
         #calculate values for the next layer
         elif(self.next.name == LayerName.Output):
             newActivations = np.array(np.dot(self.weights, self.activations))
-            #print("Next Level Activations: ")
-            #print(newActivations)
-            #print()
+        #If the next layer is a hidden layer, apply the sigmoid activation function
         else:
             newActivations = np.array(np.dot(self.weights, self.activations))
-            #print("Next Level Activations before Sigmoid: ")
-            #print(newActivations)
-            #print()
             newActivations = self.sigmoid(newActivations)
-            #print("Next Level Activations: ")
-            #print(newActivations)
-            #print()
+
         if(printSteps):
             print("New Activations: ")
             print(newActivations)
@@ -93,6 +89,7 @@ class Layer:
     def calculateOutput(self):
         if self.classificationType == "regression":
             return self.activations
+        #for classification problems apply the softmax activation function
         elif self.classificationType == "classification":
             classifications = np.empty(len(self.activations[0]), dtype=object)
             for i in range(len(classifications)):

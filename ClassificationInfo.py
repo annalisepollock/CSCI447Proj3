@@ -33,7 +33,7 @@ class ClassificationInfo:
         print("True Negatives: " + str(self.TN))
         print("False Positives: " + str(self.FP))
         print("False Negatives: " + str(self.FN))
-        print("Loss: " + str(self.loss))
+        print("Loss: " + str(self.loss[-5:]))
         if (self.TP + self.TN + self.FP + self.FN) == 0:
             print("Fold empty")
         elif (self.TP + self.TN) == 0:
@@ -51,9 +51,11 @@ class ClassificationInfo:
         self.FP += num
     def addFN(self, num):
         self.FN += num
-    
-    def addLoss(self, loss):
-        self.loss = loss
+    def addTrueClasses(self, newTrueClasses):
+        self.trueClasses.extend(newTrueClasses)
+    def addLoss(self, newLoss):
+        self.loss.append(newLoss)
+
     def getLoss(self):
         return self.loss
     def getFP(self):
@@ -66,3 +68,4 @@ class ClassificationInfo:
         return self.TN
     def getTrueClasses(self): 
         return self.trueClasses
+

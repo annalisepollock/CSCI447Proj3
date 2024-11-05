@@ -1,26 +1,27 @@
+import AlgorithmAccuracy
 import Cleaner
-import Network 
+import Network
 import Learner
 import pandas as pd
 import numpy as np
 from ucimlrepo import fetch_ucirepo
 import warnings
+import ClassificationInfo
+import matplotlib.pyplot as plt
 
 
 def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
-    
-    cleaner = Cleaner.Cleaner()
 
-    
+    cleaner = Cleaner.Cleaner()
     #IMPORT DATA SETS 
-    
     print("BREAST CANCER")
-    breastCancerData =  fetch_ucirepo(id=15)
+    breastCancerData = fetch_ucirepo(id=15)
     breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
     breastCancerTest = breastCancerClean.sample(frac=0.5)
     breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
+
     breastCancerClassifications = breastCancerLearner.run()
     count = 0
     print("BREAST CANCER FOLD 0 HIDDEN LAYERS")
@@ -38,6 +39,7 @@ def main():
             classification.printAccuracy()
             count += 1
             print()
+    
     breastCancerLearner.setHiddenLayers(2)
     breastCancerClassifications = breastCancerLearner.run(True)
     count = 0
@@ -51,24 +53,28 @@ def main():
         foldAccuracyTotal += (classification.TP + classification.TN)/(classification.TP + classification.TN + classification.FP + classification.FN)
     print("Average Accuracy: " + str(foldAccuracyTotal/10))
     print()
-    '''
+    
+    
     print("GLASS")
-    glassData =  fetch_ucirepo(id=42)
+    glassData = fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
     glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
     glassLearner = Learner.Learner(glassClean, "classification", 'Type_of_glass')
-    #glassLearner.setHiddenLayers(1)
-    glassClassifications = glassLearner.run()
-    for classification in glassClassifications:
-        classification.printAccuracy()
-        print()
-    print()
-    
+
+    glassInfo = classificationAndAccuracyAllLayers(3, glassLearner, glassClean, "Glass")
+
+    glassLayerFoldClassifications = glassInfo[0]  # 3 instances of arrays w/ 10 classification infos
+    glassTotalClassification = glassInfo[1]
+    glassTotalAccuracyStats = glassInfo[2]
+
     print("SOYBEAN")
     soybeanData =  fetch_ucirepo(id=91)
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
     soybeanClean = cleaner.clean(soybeanDataFrame, [], 'class')
     soybeanLearner = Learner.Learner(soybeanClean, "classification", 'class')
+    soybeanLearner.setHiddenLayers(2)
+
+    
     soybeanLearner.setHiddenLayers(2)
     soybeanClassifications = soybeanLearner.run()
     for classification in soybeanClassifications:
@@ -93,17 +99,21 @@ def main():
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
     computerLearner = Learner.Learner(computerClean, "regression", 'ERP')
     computerLearner.setHiddenLayers(2)
-    computerLearner.run()
-    classifications = computerLearner.run()
-    for classification in classifications:
-        classification.printAccuracy()
-        print()
+
+    computerInfo = classificationAndAccuracyAllLayers(3, computerLearner, computerClean, "Computer Hardware")
+
+    computerLayerFoldClassifications = computerInfo[0]  # 3 instances of arrays w/ 10 classification infos
+    computerTotalClassification = computerInfo[1]
+    computerTotalAccuracyStats = computerInfo[2]
+    
 
     print("FOREST FIRES")
     forestFiresData =  fetch_ucirepo(id=162)
     forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
     forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
     forestLearner = Learner.Learner(forestClean, "regression", 'area')
+
+
     classifications = forestLearner.run()
     count = 0
     print("FOREST FIRES FOLD 0 HIDDEN LAYERS")
@@ -134,13 +144,9 @@ def main():
             print()
         foldAccuracyTotal += (classification.TP + classification.TN)/(classification.TP + classification.TN + classification.FP + classification.FN)
     print("Average Accuracy: " + str(foldAccuracyTotal/10))
+    
+    
 
-    print("SOYBEAN MODEL")
-    soybeanLearner.network.printNetwork()
-
-    print("COMPUTER HARDWARE MODEL")
-    computerLearner.network.printNetwork()
-    '''
 
 
 
