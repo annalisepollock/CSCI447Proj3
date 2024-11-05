@@ -8,8 +8,11 @@ class AlgorithmAccuracy:
         #calculate precision, recall, f1
         self.precision = (self.stats.TP)/(self.stats.TP + self.stats.FP)
         self.recall = (self.stats.TP)/(self.stats.TP + self.stats.FN)
+        self.f1 = 0
 
-        self.f1 = 2 * ((self.precision * self.recall)/(self.precision + self.recall))
+        if (self.precision + self.recall) != 0:
+            self.f1 = 2 * ((self.precision * self.recall)/(self.precision + self.recall))
+
         self.loss = self.calculateLoss()
         self.numFeatures = numFeatures
         self.name = name
@@ -34,6 +37,9 @@ class AlgorithmAccuracy:
         return self.loss
     def getNumFeatures(self):
         return self.numFeatures
+
+    def getName(self):
+        return self.name
     
     def print(self):
         print("DataSet: " + self.name)

@@ -7,6 +7,7 @@ import numpy as np
 from ucimlrepo import fetch_ucirepo
 import warnings
 import ClassificationInfo
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -52,7 +53,7 @@ def main():
     soybeanTotalClassification = soybeanInfo[1]
     soybeanTotalAccuracyStats = soybeanInfo[2]
 
-    '''print("ABALONE")
+    print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
@@ -62,7 +63,7 @@ def main():
 
     abaloneLayerFoldClassifications = abaloneInfo[0]  # 3 instances of arrays w/ 10 classification infos
     abaloneTotalClassification = abaloneInfo[1]
-    abaloneTotalAccuracyStats = abaloneInfo[2]'''
+    abaloneTotalAccuracyStats = abaloneInfo[2]
 
     print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
@@ -88,10 +89,49 @@ def main():
     forestTotalClassification = forestInfo[1]
     forestTotalAccuracyStats = forestInfo[2]
 
+    # PLOT LOSS DATA
+    # losses = [
+    #     breastCancerTotalClassification.getLoss(),
+    #     glassTotalClassification.getLoss(),
+    #     soybeanTotalClassification.getLoss(),
+    #     abaloneTotalClassification.getLoss(),
+    #     computerTotalClassification.getLoss(),
+    #     forestTotalClassification.getLoss()
+    # ]
+    # labels = [
+    #     breastCancerTotalAccuracyStats.getName(),
+    #     glassTotalAccuracyStats.getName(),
+    #     soybeanTotalAccuracyStats.getName(),
+    #     abaloneTotalAccuracyStats.getName(),
+    #     computerTotalAccuracyStats.getName(),
+    #     forestTotalAccuracyStats.getName()
+    # ]
+    #
+    # # Number of arrays
+    # numArrays = len(losses)
+    #
+    # # Create a figure with a subplot for each array
+    # fig, axes = plt.subplots(1, numArrays, figsize=(15, 5))
+    #
+    # # Plot each array in its own subplot
+    # for i, (array, label) in enumerate(zip(losses, labels)):
+    #     x = range(len(array))  # x values are the indices
+    #     y = array  # y values are the values in the array
+    #     axes[i].plot(x, y,linestyle='-')  # Plot values with line and markers
+    #     axes[i].set_title("Avg Loss per Fold for " + label)
+    #     axes[i].set_xlabel("Index")
+    #     if i == 0:
+    #         axes[i].set_ylabel("Loss")
+    #
+    # # Adjust layout and show plot
+    # plt.tight_layout()
+    # plt.show()
 
 def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name):
     layerFoldClassifications = []  # 3 instances of arrays w/ 10 classification infos
-    totalClassification = ClassificationInfo.ClassificationInfo()
+
+    totalClassifications = [] # store classInfo for 0, 1, 2 layers
+    totalAccuracies = [] # store accuracy stats for 0, 1, 2 layers
 
     # print("CLEANED DATASET: ")
     for numHiddenLayers in range(layersRange):
@@ -99,21 +139,25 @@ def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name):
         classification = learner.run()  # returns array of 10 ClassificationInfos (1 per fold)
         layerFoldClassifications.append(classification)
 
+        totalClassification = ClassificationInfo.ClassificationInfo()
+
         # Generate total classification across folds for dataset
         for classInfo in classification:
             totalClassification.addTP(classInfo.getTP())  # add true positives
             totalClassification.addTN(classInfo.getTN())  # add true negatives
             totalClassification.addFP(classInfo.getFP())  # add false positives
             totalClassification.addFN(classInfo.getFN())  # add false negatives
-            totalClassification.addLoss(classInfo.getLoss())  # add loss
+            totalClassification.addLoss(np.mean(classInfo.getLoss()))  # add loss
             totalClassification.addTrueClasses(classInfo.getTrueClasses())  # add true classes
 
-
-    totalAccuracyStats = AlgorithmAccuracy.AlgorithmAccuracy(totalClassification,
+        totalClassifications.append(totalClassification)
+        totalAccuracyStats = AlgorithmAccuracy.AlgorithmAccuracy(totalClassification,
                                                                          cleanData.shape[1] - 1,
                                                                          name)
-    totalClassification.printAccuracy()
-    totalAccuracyStats.print()
-    return layerFoldClassifications, totalClassification, totalAccuracyStats
+        totalAccuracies.append(totalAccuracyStats)
+
+        totalClassification.printAccuracy()
+        totalAccuracyStats.print()
+    return layerFoldClassifications, totalClassifications, totalAccuracies
 
 main()
