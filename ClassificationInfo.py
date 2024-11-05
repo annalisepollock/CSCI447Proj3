@@ -55,6 +55,8 @@ class ClassificationInfo:
         self.trueClasses.extend(newTrueClasses)
     def addLoss(self, newLoss):
         self.loss.append(newLoss)
+    def setLoss(self, loss):
+        self.loss = loss
 
     def getLoss(self):
         return self.loss
