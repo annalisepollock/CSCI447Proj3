@@ -52,8 +52,9 @@ class Learner:
     def setTestClass(self, testClass):
         self.testClass = testClass
     
-    def checkOscillation(self, losses, window_size=5, threshold=3):
+    def checkOscillation(self, losses, threshold=3):
         #if not enough losses return
+        window_size = len(losses) // 2
         if len(losses) < window_size:
             return False
         oscillations = 0
