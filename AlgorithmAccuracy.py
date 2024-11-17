@@ -25,8 +25,10 @@ class AlgorithmAccuracy:
     
     def getF1(self):
         return self.f1
+    
     def getTotalAccuracy(self):
         return self.totalAccuracy
+    
     def getNumFeatures(self):
         return self.numFeatures
 

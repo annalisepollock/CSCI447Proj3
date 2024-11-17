@@ -64,10 +64,10 @@ class Network:
         batches = []
         #split data into an array of equal size batches
         for i in range(0, len(data), self.batchSize):
-            batches.append(data[i:i + self.batchSize])
-
-            if len(batches[-1]) < self.batchSize:
-                batches.pop()
+            if self.batchSize >= len(data[i:]):
+                batches.append(data[i:])
+            else:
+                batches.append(data[i:i + self.batchSize])
 
         return batches
 

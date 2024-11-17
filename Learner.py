@@ -126,13 +126,9 @@ class Learner:
             self.neuronsPerLayer = self.data.shape[0] - 10
         
         #tune batch size
-        foldIndex = len(self.folds) - 1
         #Ensure dataset not super small
-        if self.data.drop(self.folds[foldIndex % len(self.folds)].index).shape[0] < 100:
-            batchSizes = np.linspace(3, 10, 5).astype(int)
-        #Other wise set batch sizes to be between 10 and 100
-        else:
-            batchSizes = np.linspace(10, 100, 5).astype(int)
+        trainSize = self.data.drop(self.folds[foldIndex % len(self.folds)].index).shape[0]
+        batchSizes = [int(trainSize * 0.05), int(trainSize * 0.8), int(trainSize * 0.12), int(trainSize * 0.17), int(trainSize * 0.2), int(trainSize * 0.25)]
         accuracy = 0
         bestBatchSize = 0
         for batchSize in batchSizes:
@@ -225,13 +221,28 @@ class Learner:
         #create batches with train data
         batches = self.network.createBatches(trainData)
         batchIndex = 0 
+        if printSteps == True:
+            print("BATCHES")
+            print(batches)
+            print("BATCHES LENGTH")
+            print(len(batches))
+            print("BATCH SIZE")
+            print(self.batchSize)
+            print("TRAINING DATA SIZE")
+            print(trainData.shape)
+            print()
         #train until convergence or the end of the batches 
-        while not self.checkConvergence() and batchIndex != len(batches)-1:
+        while not self.checkConvergence(printSteps) and batchIndex != len(batches):
+            if printSteps == True:
+                print("HERE")
             batch = batches[batchIndex % len(batches)]
+            if self.network.getBatchSize() != batch.shape[0]:
+                self.network.setBatchSize(batch.shape[0])
+            
             testClasses = batch[self.classPlace].to_numpy()
             testData = batch.drop(columns=[self.classPlace])
             #run forward pass to get guesses
-            output = self.forwardPass(testData, printSteps)
+            output = self.forwardPass(testData)
             if printSteps == True:
                 print("OUTPUT: ")
                 print(output)
@@ -246,6 +257,9 @@ class Learner:
                     oneHot[i][classesList.index(testClasses[i])] = 1
                 self.backwardPass(oneHot.T, printSteps)
             else:
+                if(printSteps == True):
+                    print("Starting back pass")
+                    print()
                 self.backwardPass(testClasses, printSteps)
             batchIndex += 1
 
@@ -307,15 +321,14 @@ class Learner:
         return self.network.forwardPass(batch, printSteps)
 
     def backwardPass(self, testClasses, printSteps = False):
+        if printSteps == True:
+            print("backpass")
+            print()
         currLayer = self.network.getOutputLayer()
         if printSteps == True:
             print("BACKWARD PASS...")
             print("OUTPUT LAYER: ")
             print(currLayer.activations)
-            print("TEST CLASSES: ")
-            print(testClasses)
-            print()
-            print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
         # calculate error (targets - predictions)
         error = testClasses - currLayer.activations
         errorAvg = np.mean(error, axis=0)
@@ -328,8 +341,6 @@ class Learner:
             numSamples = testClasses.shape[1]
             loss = -(1 / numSamples) * (np.sum(np.log(predictions) * testClasses))
             if printSteps == True:
-                print("ERROR AVG")
-                print(errorAvg)
                 print()
                 print("LOSS FOR CLASSIFICATION: " + str(loss))
             self.losses.append(loss)
@@ -338,10 +349,6 @@ class Learner:
                 print(self.losses)
         else:
             # Mean Squared Error for Regression
-            if printSteps == True:
-                print("ERROR AVG")
-                print(errorAvg)
-                print(testClasses.shape)
             numSamples = testClasses.shape[0]
             loss = (1 / numSamples) * np.sum(error ** 2)
             if printSteps == True:
@@ -355,41 +362,46 @@ class Learner:
         outputWeightUpdate = self.learningRate * np.dot(error,
                                                         currLayer.prev.activations.T) + self.momentum * currLayer.prev.prevUpdate
 
-        if printSteps == True:
-            print("\nWEIGHT UPDATE:")
-            print(outputWeightUpdate)
 
         hiddenLayer = currLayer.getPrev()
         
         # if there are more than just the input and output layers...move through each layer and update weights
         while str(hiddenLayer.name) != str(self.network.getInputLayer().name):
             # apply hidden layer weight update rule
+            '''
             if printSteps == True:
                 print("\nCALCULATE WEIGHT UPDATE  " + str(hiddenLayer.name) + " LAYER...")
 
                 print("PREVIOUS WEIGHTS: ")
                 print(hiddenLayer.prev.weights)
+            '''
 
 
             propagatedError = np.dot(hiddenLayer.weights.T, error) * hiddenLayer.activations * (
                     1 - hiddenLayer.activations)
             error = propagatedError
+            '''
             if printSteps == True:
                 print("\nPROPAGATED ERROR:")
                 print(propagatedError)
+            '''
             #calculate hidden layer weight update
             hiddenWeightUpdate = self.learningRate * np.dot(propagatedError, hiddenLayer.prev.activations.T) + self.momentum * hiddenLayer.prev.prevUpdate
+            '''
             if printSteps == True:
                 print("\nWEIGHT UPDATE:")
                 print(hiddenWeightUpdate)
+            '''
 
             # apply weight update
             hiddenLayer.prev.prevWeights = hiddenLayer.prev.weights
             hiddenLayer.prev.weights = hiddenLayer.prev.weights + hiddenWeightUpdate
             hiddenLayer.prev.prevUpdate = hiddenWeightUpdate
+            '''
             if printSteps == True:
                 print("\nNEW WEIGHTS:")
                 print(hiddenLayer.prev.weights)
+            '''
             # move to previous layer in network
             hiddenLayer = hiddenLayer.getPrev()
 
@@ -397,15 +409,16 @@ class Learner:
         currLayer.prev.prevWeights = currLayer.prev.weights
         currLayer.prev.weights = currLayer.prev.weights + outputWeightUpdate
         currLayer.prev.prevUpdate = outputWeightUpdate
+        '''
         if printSteps == True:
             print("\nNEW WEIGHTS FOR OUTPUT:")
             print(currLayer.prev.weights)
+        '''
 
-    def checkConvergence(self):
-        #print("CHECKING CONVERGENCE...")
-        #print()
+    def checkConvergence(self, printSteps = False):
         if len(self.losses) < self.windowSize*2:
-            #print("NOT ENOUGH DATA TO CHECK CONVERGENCE")
+            if printSteps == True:
+                print("NOT ENOUGH DATA TO CHECK CONVERGENCE")
             return False # not enough data to check convergence
 
         # Calculate moving averages for the last two windows
@@ -420,7 +433,7 @@ class Learner:
                 return True
         else:
             # Reset counter if loss change exceeds tolerance
-            self.convergence_count = 0
+            self.convergenceCount = 0
 
         return False
 

@@ -13,7 +13,7 @@ def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
 
     cleaner = Cleaner.Cleaner()
-    
+    '''
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData = fetch_ucirepo(id=15)
@@ -45,7 +45,7 @@ def main():
     print("Average Accuracy: " + str(foldAccuracyTotal/10))
     print()
     
-    '''
+    
     print("GLASS")
     glassData = fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
@@ -55,6 +55,7 @@ def main():
     for classification in glassClassifications:
         classification.printAccuracy()
         print()
+    
     glassLearner.setHiddenLayers(1)
     glassClassifications = glassLearner.run()
     for classification in glassClassifications:
@@ -101,27 +102,32 @@ def main():
         classification.printAccuracy()
         print()
     
+    '''
     print("COMPUTER HARDWARE")
     computerHardwareData = fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
     computerLearner = Learner.Learner(computerClean, "regression", 'ERP')
     computerClassifications = computerLearner.run()
+    print("COMPUTER HARDWARE FOLDS 0 HIDDEN LAYERS")
     for classification in computerClassifications:
         classification.printAccuracy()
         print()
+    
     computerLearner.setHiddenLayers(1)
     computerClassifications = computerLearner.run()
+    print("COMPUTER HARDWARE FOLDS 1 HIDDEN LAYERS")
     for classification in computerClassifications:
         classification.printAccuracy()
         print()
     computerLearner.setHiddenLayers(2)
     computerClassifications = computerLearner.run()
+    print("COMPUTER HARDWARE FOLDS 2 HIDDEN LAYERS")
     for classification in computerClassifications:
         classification.printAccuracy()
         print()
+    '''
     
-
     print("FOREST FIRES")
     forestFiresData = fetch_ucirepo(id=162)
     forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
