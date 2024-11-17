@@ -264,12 +264,12 @@ class Learner:
             for i in range(len(output)):
                 classifications.addTrueClass([testClasses[i], output[i]])
                 classifications.addConfusion(self.classificationAccuracy(testClasses[i], output[i]))
-                classifications.addLoss(self.losses.copy())
+                classifications.setLoss(self.losses.copy())
         elif(self.classificationType == "regression"):
             for i in range(len(output[0])):
                 classifications.addTrueClass([testClasses[i], output[0][i]])
                 classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[0][i]))
-                classifications.addLoss(self.losses.copy())
+                classifications.setLoss(self.losses.copy())
         return classifications
 
 
