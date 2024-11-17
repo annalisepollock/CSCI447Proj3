@@ -55,8 +55,7 @@ class Learner:
     def checkOscillation(self, losses, threshold=3):
         #if not enough losses return
         window_size = len(losses) // 2
-        if len(losses) < window_size:
-            return False
+
         oscillations = 0
         #check for oscillations in a given window return false if over threshold 
         for i in range(1, window_size):

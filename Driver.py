@@ -10,6 +10,7 @@ def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
     
     cleaner = Cleaner.Cleaner()
+    '''
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData = fetch_ucirepo(id=15)
@@ -19,36 +20,28 @@ def main():
     breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
 
     breastCancerClassifications = breastCancerLearner.run()
-    count = 0
     print("BREAST CANCER FOLD 0 HIDDEN LAYERS")
     for classification in breastCancerClassifications:
-        if count == 0:
-            classification.printAccuracy()
-            count += 1
-            print()
+        classification.printAccuracy()
+        print()
     breastCancerLearner.setHiddenLayers(1)
     breastCancerClassifications = breastCancerLearner.run()
-    count = 0
     print("BREAST CANCER FOLD 1 HIDDEN LAYERS")
     for classification in breastCancerClassifications:
-        if count == 0:
-            classification.printAccuracy()
-            count += 1
-            print()
+        classification.printAccuracy()
+        print()
     
     breastCancerLearner.setHiddenLayers(2)
-    breastCancerClassifications = breastCancerLearner.run(True)
-    count = 0
+    breastCancerClassifications = breastCancerLearner.run()
     foldAccuracyTotal = 0
     print("BREAST CANCER FOLD 2 HIDDEN LAYERS")
     for classification in breastCancerClassifications:
-        if count == 0:
-            classification.printAccuracy()
-            count += 1
-            print()
+        classification.printAccuracy()
+        print()
         foldAccuracyTotal += (classification.TP + classification.TN)/(classification.TP + classification.TN + classification.FP + classification.FN)
     print("Average Accuracy: " + str(foldAccuracyTotal/10))
     print()
+    
     
     print("GLASS")
     glassData = fetch_ucirepo(id=42)
@@ -69,7 +62,7 @@ def main():
     for classification in glassClassifications:
         classification.printAccuracy()
         print()
-
+    
     print("SOYBEAN")
     soybeanData =  fetch_ucirepo(id=91)
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
@@ -118,7 +111,7 @@ def main():
         classification.printAccuracy()
         print()
     
-
+    '''
     print("COMPUTER HARDWARE")
     computerHardwareData =  fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
@@ -139,7 +132,7 @@ def main():
         classification.printAccuracy()
         print()
     
-
+    '''
     print("FOREST FIRES")
     forestFiresData =  fetch_ucirepo(id=162)
     forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
@@ -159,6 +152,7 @@ def main():
     for classification in forestClassifications:
         classification.printAccuracy()
         print()
+    '''
 
     
     
