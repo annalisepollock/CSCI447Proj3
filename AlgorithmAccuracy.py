@@ -13,28 +13,20 @@ class AlgorithmAccuracy:
         if (self.precision + self.recall) != 0:
             self.f1 = 2 * ((self.precision * self.recall)/(self.precision + self.recall))
 
-        self.loss = self.calculateLoss()
+        self.totalAccuracy = self.calculateTotalAccuracy()
         self.numFeatures = numFeatures
         self.name = name
     def confusionMatrix(self):
         return {"TP": self.stats.TP, "FP": self.stats.FP, "FN": self.stats.FN, "TN": self.stats.TN}
     
     #calculate loss by summing the number of correct classifications and dividing by the total number of classifications
-    def calculateLoss(self):
-        total = 0
-        sum = 0
-        for i in self.stats.getTrueClasses():
-            if i[0] == i[1]:
-                sum += 1
-            else:
-                sum += 0
-            total += 1
-        return sum/total
+    def calculateTotalAccuracy(self):
+        return (self.stats.TP + self.stats.TN)/(self.stats.TP + self.stats.TN + self.stats.FP + self.stats.FN)
     
     def getF1(self):
         return self.f1
-    def getLoss(self):
-        return self.loss
+    def getTotalAccuracy(self):
+        return self.totalAccuracy
     def getNumFeatures(self):
         return self.numFeatures
 
