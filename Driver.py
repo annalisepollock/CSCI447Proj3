@@ -80,7 +80,7 @@ def main():
     soybeanTotalAccuracyStats = soybeanInfo[2]
 
     for acc in soybeanTotalAccuracyStats:
-        acc.print()
+        acc.print()'''
 
     print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
@@ -126,7 +126,7 @@ def main():
     for classification in computerClassifications:
         classification.printAccuracy()
         print()
-    '''
+
     
     print("FOREST FIRES")
     forestFiresData = fetch_ucirepo(id=162)
@@ -189,7 +189,7 @@ def main():
 
     # Adjust layout and display plot
     plt.tight_layout()
-    plt.show()
+    plt.show()'''
 
     # datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
     #                      abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]
@@ -261,7 +261,7 @@ def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name):
         totalAccuracies.append(totalAccuracyStats)
 
     return layerFoldClassifications, totalClassifications, totalAccuracies
-    '''
+
 
 
 main()
