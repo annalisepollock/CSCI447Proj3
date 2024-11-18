@@ -13,7 +13,7 @@ def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
 
     cleaner = Cleaner.Cleaner()
-    '''
+    
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData = fetch_ucirepo(id=15)
@@ -21,12 +21,13 @@ def main():
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
     breastCancerTest = breastCancerClean.sample(frac=0.5)
     breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
-
+    
     breastCancerClassifications = breastCancerLearner.run()
     print("BREAST CANCER FOLD 0 HIDDEN LAYERS")
     for classification in breastCancerClassifications:
         classification.printAccuracy()
         print()
+    '''
     breastCancerLearner.setHiddenLayers(1)
     breastCancerClassifications = breastCancerLearner.run()
     print("BREAST CANCER FOLD 1 HIDDEN LAYERS")
@@ -51,6 +52,7 @@ def main():
     glassDataFrame = pd.DataFrame(glassData.data.original)
     glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
     glassLearner = Learner.Learner(glassClean, "classification", 'Type_of_glass')
+    
     glassClassifications = glassLearner.run()
     for classification in glassClassifications:
         classification.printAccuracy()
@@ -72,7 +74,7 @@ def main():
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
     soybeanClean = cleaner.clean(soybeanDataFrame, [], 'class')
     soybeanLearner = Learner.Learner(soybeanClean, "classification", 'class')
-
+    
     soybeanInfo = classificationAndAccuracyAllLayers(3, soybeanLearner, soybeanClean, "Soybean")
 
     soybeanLayerFoldClassifications = soybeanInfo[0]  # 3 instances of arrays w/ 10 classification infos
@@ -81,12 +83,14 @@ def main():
 
     for acc in soybeanTotalAccuracyStats:
         acc.print()
-
+    
     print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
+    
     abaloneLearner = Learner.Learner(abaloneClean, "regression", 'Rings')
+    
     abaloneClassifications = abaloneLearner.run()
     for classification in abaloneClassifications:
         classification.printAccuracy()
@@ -102,12 +106,12 @@ def main():
         classification.printAccuracy()
         print()
     
-    '''
     print("COMPUTER HARDWARE")
     computerHardwareData = fetch_ucirepo(id=29)
     computerHardwareDataFrame = pd.DataFrame(computerHardwareData.data.original)
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
     computerLearner = Learner.Learner(computerClean, "regression", 'ERP')
+    
     computerClassifications = computerLearner.run()
     print("COMPUTER HARDWARE FOLDS 0 HIDDEN LAYERS")
     for classification in computerClassifications:
@@ -126,7 +130,7 @@ def main():
     for classification in computerClassifications:
         classification.printAccuracy()
         print()
-    '''
+    
     
     print("FOREST FIRES")
     forestFiresData = fetch_ucirepo(id=162)

@@ -15,7 +15,6 @@ class Learner:
         self.losses = []
         self.convergenceCount = 0
         # end convergence testing
-
         self.testData = data.sample(frac=0.1)
         self.data = data.drop(self.testData.index)
         self.classPlace = classPlace
@@ -52,8 +51,7 @@ class Learner:
     def setTestClass(self, testClass):
         self.testClass = testClass
     
-    def checkOscillation(self, losses, threshold=3):
-        #if not enough losses return
+    def checkOscillation(self, losses, threshold=2):
         window_size = len(losses) // 2
 
         oscillations = 0
@@ -79,19 +77,21 @@ class Learner:
         #TRAINING MOMENTUM
         #decrease as loss is oscillating
         while not momentumSet:
-            #print("training momentum", str(self.momentum))
+            print("training momentum", str(self.momentum))
             fold = self.folds[foldIndex % len(self.folds)]
             if self.momentum <= 0.5:
                 momentumSet = True
                 self.momentum = 0.5
                 break
             self.train(self.data.drop(fold.index))
+            print("CURRENT LOSSES: ")
+            print(self.losses)
+            print("OSCILLATION:", self.checkOscillation(self.losses))
             if self.checkOscillation(self.losses):
                 self.momentum -= 0.1
             else:
                 momentumSet = True
             foldIndex += 1
-            
        #TUNING LEARNING RATE
         #decrease as loss is oscillating
         while not learningRateSet:
@@ -343,6 +343,7 @@ class Learner:
             if printSteps == True:
                 print()
                 print("LOSS FOR CLASSIFICATION: " + str(loss))
+            
             self.losses.append(loss)
             if printSteps == True:
                 print("APPENDING LOSS")
