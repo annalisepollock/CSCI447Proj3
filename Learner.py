@@ -9,8 +9,8 @@ class Learner:
 
     def __init__ (self, data, classificationType, classPlace):
         # convergence testing
-        self.patience = 5
-        self.windowSize = 3
+        self.patience = 2
+        self.windowSize = 1
         self.tolerance = 1e-1
         self.losses = []
         self.convergenceCount = 0
@@ -241,7 +241,7 @@ class Learner:
             
             testClasses = batch[self.classPlace].to_numpy()
             testData = batch.drop(columns=[self.classPlace])
-            #run forward pass to get guesses
+            # run forward pass to get guesses
             output = self.forwardPass(testData)
             if printSteps == True:
                 print("OUTPUT: ")
@@ -431,6 +431,12 @@ class Learner:
             print(currLayer.prev.weights)
 
     def checkConvergence(self, printSteps = False):
+        if self.classificationType == 'regression':
+            targetRange = self.data[self.classPlace].max() - self.data[self.classPlace].min()
+            self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
+        else:
+            self.windowSize = 3
+
         if len(self.losses) < self.windowSize*2:
             if printSteps == True:
                 print("NOT ENOUGH DATA TO CHECK CONVERGENCE")

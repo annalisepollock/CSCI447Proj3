@@ -38,6 +38,6 @@ class AlgorithmAccuracy:
     def print(self):
         print("DataSet: " + self.name)
         print("F1: " + str(self.f1))
-        print("Loss: " + str(self.loss))
+        print("Total Accuracy: " + str(self.totalAccuracy))
         print("Confusion Matrix: " + str(self.confusionMatrix()))
         print("Number of Features: " + str(self.numFeatures))

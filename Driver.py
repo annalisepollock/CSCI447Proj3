@@ -21,53 +21,24 @@ def main():
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
     breastCancerTest = breastCancerClean.sample(frac=0.5)
     breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
-    
-    breastCancerClassifications = breastCancerLearner.run()
-    print("BREAST CANCER FOLD 0 HIDDEN LAYERS")
-    for classification in breastCancerClassifications:
-        classification.printAccuracy()
-        print()
-    '''
-    breastCancerLearner.setHiddenLayers(1)
-    breastCancerClassifications = breastCancerLearner.run()
-    print("BREAST CANCER FOLD 1 HIDDEN LAYERS")
-    for classification in breastCancerClassifications:
-        classification.printAccuracy()
-        print()
-    
-    breastCancerLearner.setHiddenLayers(2)
-    breastCancerClassifications = breastCancerLearner.run()
-    foldAccuracyTotal = 0
-    print("BREAST CANCER FOLD 2 HIDDEN LAYERS")
-    for classification in breastCancerClassifications:
-        classification.printAccuracy()
-        print()
-        foldAccuracyTotal += (classification.TP + classification.TN)/(classification.TP + classification.TN + classification.FP + classification.FN)
-    print("Average Accuracy: " + str(foldAccuracyTotal/10))
-    print()
-    
-    
+
+    breastCancerInfo = classificationAndAccuracyAllLayers(3, breastCancerLearner, breastCancerClean, "Breast Cancer")
+
+    breastCancerLayerFoldClassifications = breastCancerInfo[0]  # 3 instances of arrays w/ 10 classification infos
+    breastCancerTotalClassification = breastCancerInfo[1]
+    breastCancerTotalAccuracyStats = breastCancerInfo[2]
+
     print("GLASS")
     glassData = fetch_ucirepo(id=42)
     glassDataFrame = pd.DataFrame(glassData.data.original)
     glassClean = cleaner.clean(glassDataFrame, ['Id_number'], 'Type_of_glass')
     glassLearner = Learner.Learner(glassClean, "classification", 'Type_of_glass')
-    
-    glassClassifications = glassLearner.run()
-    for classification in glassClassifications:
-        classification.printAccuracy()
-        print()
-    
-    glassLearner.setHiddenLayers(1)
-    glassClassifications = glassLearner.run()
-    for classification in glassClassifications:
-        classification.printAccuracy()
-        print()
-    glassLearner.setHiddenLayers(2)
-    glassClassifications = glassLearner.run()
-    for classification in glassClassifications:
-        classification.printAccuracy()
-        print()
+
+    glassInfo = classificationAndAccuracyAllLayers(3, glassLearner, glassClean, "Glass")
+
+    glassLayerFoldClassifications = glassInfo[0]  # 3 instances of arrays w/ 10 classification infos
+    glassTotalClassification = glassInfo[1]
+    glassTotalAccuracyStats = glassInfo[2]
     
     print("SOYBEAN")
     soybeanData = fetch_ucirepo(id=91)
@@ -80,9 +51,6 @@ def main():
     soybeanLayerFoldClassifications = soybeanInfo[0]  # 3 instances of arrays w/ 10 classification infos
     soybeanTotalClassification = soybeanInfo[1]
     soybeanTotalAccuracyStats = soybeanInfo[2]
-
-    for acc in soybeanTotalAccuracyStats:
-        acc.print()
     
     print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
@@ -90,21 +58,11 @@ def main():
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
     
     abaloneLearner = Learner.Learner(abaloneClean, "regression", 'Rings')
-    
-    abaloneClassifications = abaloneLearner.run()
-    for classification in abaloneClassifications:
-        classification.printAccuracy()
-        print()
-    abaloneLearner.setHiddenLayers(1)
-    abaloneClassifications = abaloneLearner.run()
-    for classification in abaloneClassifications:
-        classification.printAccuracy()
-        print()
-    abaloneLearner.setHiddenLayers(2)
-    abaloneClassifications = abaloneLearner.run()
-    for classification in abaloneClassifications:
-        classification.printAccuracy()
-        print()
+    abaloneInfo = classificationAndAccuracyAllLayers(3, abaloneLearner, abaloneClean, "Abalone")
+
+    abaloneLayerFoldClassifications = abaloneInfo[0]  # 3 instances of arrays w/ 10 classification infos
+    abaloneTotalClassification = abaloneInfo[1]
+    abaloneTotalAccuracyStats = abaloneInfo[2]
     
     print("COMPUTER HARDWARE")
     computerHardwareData = fetch_ucirepo(id=29)
@@ -112,45 +70,17 @@ def main():
     computerClean = cleaner.clean(computerHardwareDataFrame, [], 'ERP')
     computerLearner = Learner.Learner(computerClean, "regression", 'ERP')
     
-    computerClassifications = computerLearner.run()
-    print("COMPUTER HARDWARE FOLDS 0 HIDDEN LAYERS")
-    for classification in computerClassifications:
-        classification.printAccuracy()
-        print()
-    
-    computerLearner.setHiddenLayers(1)
-    computerClassifications = computerLearner.run()
-    print("COMPUTER HARDWARE FOLDS 1 HIDDEN LAYERS")
-    for classification in computerClassifications:
-        classification.printAccuracy()
-        print()
-    computerLearner.setHiddenLayers(2)
-    computerClassifications = computerLearner.run()
-    print("COMPUTER HARDWARE FOLDS 2 HIDDEN LAYERS")
-    for classification in computerClassifications:
-        classification.printAccuracy()
-        print()
-    
-    
+    computerInfo = classificationAndAccuracyAllLayers(3, computerLearner, computerClean, "Computer Hardware")
+
+    computerLayerFoldClassifications = computerInfo[0]  # 3 instances of arrays w/ 10 classification infos
+    computerTotalClassification = computerInfo[1]
+    computerTotalAccuracyStats = computerInfo[2]
+
     print("FOREST FIRES")
     forestFiresData = fetch_ucirepo(id=162)
     forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
     forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
     forestLearner = Learner.Learner(forestClean, "regression", 'area')
-    forestClassifications = forestLearner.run()
-    for classification in forestClassifications:
-        classification.printAccuracy()
-        print()
-    forestLearner.setHiddenLayers(1)
-    forestClassifications = forestLearner.run()
-    for classification in forestClassifications:
-        classification.printAccuracy()
-        print()
-    forestLearner.setHiddenLayers(2)
-    forestClassifications = forestLearner.run()
-    for classification in forestClassifications:
-        classification.printAccuracy()
-        print()
 
     forestInfo = classificationAndAccuracyAllLayers(3, forestLearner, forestClean, "Forest Fires")
 
@@ -158,6 +88,27 @@ def main():
     forestTotalClassification = forestInfo[1]
     forestTotalAccuracyStats = forestInfo[2]
 
+    print("BREAST CANCER ACCURACY")
+    for acc in breastCancerTotalAccuracyStats:
+        acc.print()
+
+    print("\nGLASS ACCURACY")
+    for acc in glassTotalAccuracyStats:
+        acc.print()
+
+    print("\nSOYBEAN ACCURACY")
+    for acc in soybeanTotalAccuracyStats:
+        acc.print()
+
+    print("\nABALONE ACCURACY")
+    for acc in abaloneTotalAccuracyStats:
+        acc.print()
+
+    print("\nCOMPUTER HARDWARE ACCURACY")
+    for acc in computerTotalAccuracyStats:
+        acc.print()
+
+    print("\nFOREST FIRE ACCURACY")
     for acc in forestTotalAccuracyStats:
         acc.print()
 
@@ -176,6 +127,7 @@ def main():
     for datasetIndex in range(numDatasets):
         for layerIndex in range(numLayers):
             ax = axes[datasetIndex, layerIndex]
+            losses = []
             for foldIndex in range(numFolds):
                 # Retrieve the loss array for the current layer and fold
                 losses = datasetClassificationInfo[datasetIndex][layerIndex][foldIndex].getLoss()
@@ -193,7 +145,7 @@ def main():
 
     # Adjust layout and display plot
     plt.tight_layout()
-    plt.show()'''
+    plt.show()
 
     # datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
     #                      abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]
