@@ -193,7 +193,7 @@ def main():
 
     # Adjust layout and display plot
     plt.tight_layout()
-    plt.show()
+    plt.show()'''
 
     # datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
     #                      abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]
@@ -265,7 +265,7 @@ def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name):
         totalAccuracies.append(totalAccuracyStats)
 
     return layerFoldClassifications, totalClassifications, totalAccuracies
-    '''
+
 
 
 main()
