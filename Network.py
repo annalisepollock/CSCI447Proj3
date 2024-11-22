@@ -13,6 +13,13 @@ class Network:
     def __init__ (self, hiddenLayers, neuronsPerLayer, inputSize, outputSize, classificationType, batchSize, classes=[]):
         self.layers = []
         self.batchSize = int(batchSize)
+        self.hiddenLayers = hiddenLayers
+        self.neuronsPerLayer = neuronsPerLayer
+        self.inputSize = inputSize
+        self.outputSize = outputSize
+        self.classificationType = classificationType
+        self.classes = classes
+
         #create input layer
         if  hiddenLayers == 0:
             self.inputLayer = Layer.Layer(inputSize, outputSize, LayerName.Input, batchSize, classes, classificationType)
@@ -34,6 +41,35 @@ class Network:
         self.layers.append(self.outputLayer)
 
         #connect layers
+        for i in range(len(self.layers) - 1):
+            self.layers[i].setNextLayer(self.layers[i + 1])
+            self.layers[i + 1].setPreviousLayer(self.layers[i])
+
+    def reInitialize(self):
+        self.layers = []
+        self.batchSize = int(self.batchSize)
+        # create input layer
+        if self.hiddenLayers == 0:
+            self.inputLayer = Layer.Layer(self.inputSize, self.outputSize, LayerName.Input, self.batchSize, self.classes,
+                                          self.classificationType)
+            self.layers.append(self.inputLayer)
+        else:
+            self.inputLayer = Layer.Layer(self.inputSize, self.neuronsPerLayer, LayerName.Input, self.batchSize)
+            self.layers.append(self.inputLayer)
+
+            # create hidden layers
+            for i in range(self.hiddenLayers):
+                if (i == self.hiddenLayers - 1):
+                    hiddenLayer = Layer.Layer(self.neuronsPerLayer, self.outputSize, LayerName.Hidden, self.batchSize)
+                else:
+                    hiddenLayer = Layer.Layer(self.neuronsPerLayer, self.neuronsPerLayer, LayerName.Hidden, self.batchSize)
+                self.layers.append(hiddenLayer)
+
+        # create output layer
+        self.outputLayer = Layer.Layer(self.outputSize, 0, LayerName.Output, self.batchSize, self.classes, self.classificationType)
+        self.layers.append(self.outputLayer)
+
+        # connect layers
         for i in range(len(self.layers) - 1):
             self.layers[i].setNextLayer(self.layers[i + 1])
             self.layers[i + 1].setPreviousLayer(self.layers[i])

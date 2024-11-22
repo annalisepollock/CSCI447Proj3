@@ -3,10 +3,18 @@ import Network
 
 class Trainer:
     def __init__(self, algorithm, network, learningRate, momentum, batchSize ,classificationType, classPlace, trainData):
+        # attributes used for convergence
         self.patience = 2
         self.windowSize = 1
         self.tolerance = 1e-1
         self.convergenceCount = 0
+        # end attributes used for convergence
+
+        # initialize values for genetic and differential evolution algorithms (values will be tuned)
+        self.populationSize = 5
+        self.scalingFactor = 1
+        self.crossoverProbability = .8
+
         self.algorithm = algorithm
         self.network = network
         self.trainData = trainData
@@ -31,10 +39,11 @@ class Trainer:
             raise ValueError("Algorithm not recognized")
     
     def checkConvergence(self, printSteps = False):
+        # customized hyperparameters for regression/classification
         if self.classificationType == 'regression':
             targetRange = self.trainData[self.classPlace].max() - self.trainData[self.classPlace].min()
             self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
-        else:
+        else: # classification
             self.windowSize = 3
 
         if len(self.losses) < self.windowSize*2:
@@ -61,12 +70,12 @@ class Trainer:
     def backpropagation (self, printSteps = False):
         if printSteps == True:
             print("PROPAGATING NETWORK")
-        #reset losses for fold
+        # reset losses for fold
         self.losses = []
-        #if testing batch size will be different
+        # if testing batch size will be different...
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
-        #create batches with train data
+        # create batches with train data
         batches = self.network.createBatches(self.trainData)
         batchIndex = 0 
         if printSteps == True:
@@ -79,7 +88,7 @@ class Trainer:
             print("TRAINING DATA SIZE")
             print(self.trainData.shape)
             print()
-        #train until convergence or the end of the batches 
+        # train until convergence or the end of the batches
         while not self.checkConvergence(printSteps) and batchIndex != len(batches):
             if printSteps == True:
                 print("HERE")
@@ -95,8 +104,8 @@ class Trainer:
                 print("OUTPUT: ")
                 print(output)
                 print()
-            #one hot encode classification guesses
-            #Run backward pass to update weights
+            # one hot encode classification guesses
+            # Run backward pass to update weights
             if(self.classificationType == "classification"):
                 output = output[1]
                 oneHot = np.zeros((len(testClasses), len(self.classes)))
@@ -123,6 +132,8 @@ class Trainer:
     
     def backwardPass(self, testClasses, printSteps=False):
         currLayer = self.network.getOutputLayer()
+
+        # print for video
         if printSteps == True:
             print("BACKWARD PASS...")
             print("OUTPUT LAYER: ")
@@ -131,13 +142,9 @@ class Trainer:
             print(testClasses)
             print()
             print("\nCALCULATE WEIGHT UPDATE FOR OUTPUT LAYER...")
-        # calculate error (targets - predictions)
-        error = 0
 
-        if self.classificationType == "classification":
-            error = testClasses - currLayer.activations
-        else:
-            error = testClasses - currLayer.activations
+        # initialize error
+        error = testClasses - currLayer.activations
         errorAvg = np.mean(error, axis=0)
 
         epsilon = 1e-10  # small value to avoid log(0)
@@ -163,9 +170,7 @@ class Trainer:
                 print("ERROR AVG")
                 print(errorAvg)
                 print(testClasses.shape)
-            numSamples = testClasses.shape[0]
             print()
-            # loss = (1 / numSamples) * np.sum(error ** 2)
             print("target vals: ")
             print(testClasses)
             print("predictions: ")
@@ -231,11 +236,27 @@ class Trainer:
             print("\nNEW WEIGHTS FOR OUTPUT:")
             print(currLayer.prev.weights)
     
-    def swarmOptimization():
+    def swarmOptimization(self):
         pass
 
-    def differentialEvolution():
-        pass
+    def differentialEvolution(self):
+        print("RUNNING DIFFERENTIAL EVOLUTION...")
+        populations = [] # array of networks
 
-    def geneticAlgorithm():
+        # randomly generate N populations
+        for i in range(self.populationSize):
+            candidateNetwork = self.network
+            candidateNetwork.reInitialize()
+            candidateSolution = candidateNetwork # network with new randomized weights
+            candidateSolution.printNetwork()
+            populations.append(candidateSolution)
+
+        self.network = populations[0]
+        return self.network
+        # while not converged...
+            # mutation
+            # crossover
+            # selection
+
+    def geneticAlgorithm(self):
         pass
