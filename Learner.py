@@ -312,7 +312,7 @@ class Learner:
             testData = fold
             trainer = Trainer.Trainer(self.algorithm, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
             self.network = trainer.train()
-            classification = self.test(testData)
+            classification = self.test(self.testData)
             classificationInfos.append(classification)
             foldCount+=1
             

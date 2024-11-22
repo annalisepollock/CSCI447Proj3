@@ -32,7 +32,7 @@ class Trainer:
     
     def checkConvergence(self, printSteps = False):
         if self.classificationType == 'regression':
-            targetRange = self.data[self.classPlace].max() - self.data[self.classPlace].min()
+            targetRange = self.trainData[self.classPlace].max() - self.trainData[self.classPlace].min()
             self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
         else:
             self.windowSize = 3
