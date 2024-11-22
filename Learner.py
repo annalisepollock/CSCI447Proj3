@@ -36,7 +36,9 @@ class Learner:
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
         self.network = self.tuneData()
-
+    def setLosses(self, losses):
+        self.losses = losses
+    
     def setHiddenLayers(self, hiddenLayers):
         self.hiddenLayers = hiddenLayers
         self.resetNetwork()
@@ -86,7 +88,7 @@ class Learner:
                 momentumSet = True
                 self.momentum = 0.5
                 break
-            momentumTrainer = Trainer.Trainer(self.algorithm, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
+            momentumTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
             self.network = momentumTrainer.train()
             print("CURRENT LOSSES: ")
             print(self.losses)
@@ -102,7 +104,7 @@ class Learner:
             if self.learningRate == 0.0001:
                 learningRateSet = True
                 break
-            learningRateTrainer = Trainer.Trainer(self.algorithm, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
+            learningRateTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
             self.network = learningRateTrainer.train()
             if self.checkOscillation(self.losses):
                 self.learningRate = self.learningRate / 10
@@ -119,7 +121,7 @@ class Learner:
         for nuerons in nueronValues:
             self.neuronsPerLayer = nuerons
             self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
-            nueronTrainer = Trainer.Trainer(self.algorithm, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
+            nueronTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
             self.network = nueronTrainer.train()
             output = self.test(self.testData)
             foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
@@ -140,7 +142,7 @@ class Learner:
         for batchSize in batchSizes:
             self.batchSize = batchSize
             self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
-            batchTrainer = Trainer.Trainer(self.algorithm, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
+            batchTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
             self.network = batchTrainer.train()
             output = self.test(self.testData)
             foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
@@ -310,7 +312,7 @@ class Learner:
             self.resetNetwork()
             trainData = self.data.drop(fold.index)
             testData = fold
-            trainer = Trainer.Trainer(self.algorithm, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
+            trainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
             self.network = trainer.train()
             classification = self.test(self.testData)
             classificationInfos.append(classification)

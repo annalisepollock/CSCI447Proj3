@@ -6,8 +6,15 @@ class AlgorithmAccuracy:
             raise TypeError('stats must be an instance of ClassificationInfo')
         self.stats = stats
         #calculate precision, recall, f1
-        self.precision = (self.stats.TP)/(self.stats.TP + self.stats.FP)
-        self.recall = (self.stats.TP)/(self.stats.TP + self.stats.FN)
+        if(self.stats.TP + self.stats.FP) == 0:
+            self.precision = 0
+        else:
+            self.precision = (self.stats.TP)/(self.stats.TP + self.stats.FP)
+        if(self.stats.TP + self.stats.FN) == 0:
+            self.recall = 0
+        else:
+            self.recall = (self.stats.TP)/(self.stats.TP + self.stats.FN)
+        
         self.f1 = 0
 
         if (self.precision + self.recall) != 0:

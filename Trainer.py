@@ -2,11 +2,12 @@ import numpy as np
 import Network
 
 class Trainer:
-    def __init__(self, algorithm, network, learningRate, momentum, batchSize ,classificationType, classPlace, trainData):
+    def __init__(self, algorithm, learner, network, learningRate, momentum, batchSize ,classificationType, classPlace, trainData):
         # attributes used for convergence
         self.patience = 2
         self.windowSize = 1
         self.tolerance = 1e-1
+        self.learner = learner
         self.convergenceCount = 0
         # end attributes used for convergence
 
@@ -28,15 +29,18 @@ class Trainer:
     
     def train(self):
         if self.algorithm == "backpropagation":
-            return self.backpropagation()
+            finishedNetwork =  self.backpropagation()
         elif self.algorithm == "swarmOptimization":
-            return self.swarmOptimization()
+            finishedNetwork = self.swarmOptimization()
         elif self.algorithm == "differentialEvolution":
-            return self.differentialEvolution()
+            finishedNetwork = self.differentialEvolution()
         elif self.algorithm == "geneticAlgorithm":
-            return self.geneticAlgorithm()
+            finishedNetwork = self.geneticAlgorithm()
         else:
             raise ValueError("Algorithm not recognized")
+        
+        self.learner.setLosses(self.losses)
+        return finishedNetwork
     
     def checkConvergence(self, printSteps = False):
         # customized hyperparameters for regression/classification
