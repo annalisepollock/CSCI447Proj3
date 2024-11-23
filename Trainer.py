@@ -1,3 +1,6 @@
+import copy
+import random
+
 import numpy as np
 import Network
 
@@ -246,23 +249,41 @@ class Trainer:
 
     def differentialEvolution(self):
         print("RUNNING DIFFERENTIAL EVOLUTION...")
-        populations = [] # array of networks
+        population = [] # array of networks
 
         # randomly generate N populations
         for i in range(self.populationSize):
-            candidateNetwork = self.network
-            candidateNetwork.reInitialize()
-            candidateSolution = candidateNetwork # network with new randomized weights
+            # create a deep copy of the current network (all new objects + references)
+            tempNetwork = copy.deepcopy(self.network)
+            tempNetwork.reInitialize()
+            candidateSolution = tempNetwork # network with new randomized weights
             candidateSolution.printNetwork()
-            populations.append(candidateSolution)
+            population.append(candidateSolution)
 
-            # while not converged...
+        # TO-DO: while not converged...
+        # for each solution...
+        for i in range(len(population)):
+            print("MUTATION ON " + str(i+1) + " CANDIDATE SOLUTION")
+            sol = population[i]
+            # TO-DO: calculate fitness
+
             # mutation
+            donor = []
+            # randomly select three candidate solutions that are not the current solution
+            x1, x2, x3 = random.sample([p for k, p in enumerate(population) if k != i], 3)
+
+            # perform calculation for all sets of weights (exclude output layer because it will not hold weights)
+            for j in range(len(sol.getLayers())-1):
+                layerDonor = x1.getLayers()[j].getWeights() + self.scalingFactor*(x2.getLayers()[j].getWeights() - x3.getLayers()[j].getWeights())
+                donor.append(layerDonor)
+
             # crossover
-            # selection
+            offspring = []
+
+        # selection
 
         # temporary return code until the algorithm is built out
-        self.network = populations[0]
+        self.network = population[0]
         return self.network
 
     def geneticAlgorithm(self):

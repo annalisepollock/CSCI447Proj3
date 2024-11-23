@@ -30,7 +30,7 @@ class Network:
 
             #create hidden layers
             for i in range(hiddenLayers):
-                if(i == hiddenLayers - 1):
+                if i == hiddenLayers - 1:
                     hiddenLayer = Layer.Layer(neuronsPerLayer, outputSize, LayerName.Hidden, batchSize)
                 else:
                     hiddenLayer = Layer.Layer(neuronsPerLayer, neuronsPerLayer, LayerName.Hidden, batchSize)
@@ -46,33 +46,7 @@ class Network:
             self.layers[i + 1].setPreviousLayer(self.layers[i])
 
     def reInitialize(self):
-        self.layers = []
-        self.batchSize = int(self.batchSize)
-        # create input layer
-        if self.hiddenLayers == 0:
-            self.inputLayer = Layer.Layer(self.inputSize, self.outputSize, LayerName.Input, self.batchSize, self.classes,
-                                          self.classificationType)
-            self.layers.append(self.inputLayer)
-        else:
-            self.inputLayer = Layer.Layer(self.inputSize, self.neuronsPerLayer, LayerName.Input, self.batchSize)
-            self.layers.append(self.inputLayer)
-
-            # create hidden layers
-            for i in range(self.hiddenLayers):
-                if (i == self.hiddenLayers - 1):
-                    hiddenLayer = Layer.Layer(self.neuronsPerLayer, self.outputSize, LayerName.Hidden, self.batchSize)
-                else:
-                    hiddenLayer = Layer.Layer(self.neuronsPerLayer, self.neuronsPerLayer, LayerName.Hidden, self.batchSize)
-                self.layers.append(hiddenLayer)
-
-        # create output layer
-        self.outputLayer = Layer.Layer(self.outputSize, 0, LayerName.Output, self.batchSize, self.classes, self.classificationType)
-        self.layers.append(self.outputLayer)
-
-        # connect layers
-        for i in range(len(self.layers) - 1):
-            self.layers[i].setNextLayer(self.layers[i + 1])
-            self.layers[i + 1].setPreviousLayer(self.layers[i])
+        self.__init__(self.hiddenLayers, self.neuronsPerLayer, self.inputSize, self.outputSize, self.classificationType, self.batchSize, self.classes)
 
     def checkConvergence(self, tolerance=0):
         for layer in self.layers:
@@ -106,6 +80,10 @@ class Network:
                 batches.append(data[i:i + self.batchSize])
 
         return batches
+
+    def getLayers(self):
+        # return array of layers in network
+        return self.layers
 
     def getInputLayer(self):
         return self.inputLayer
