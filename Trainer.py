@@ -45,6 +45,7 @@ class Trainer:
     def checkConvergence(self, printSteps = False):
         # customized hyperparameters for regression/classification
         if self.classificationType == 'regression':
+            self.patience = 2
             targetRange = self.trainData[self.classPlace].max() - self.trainData[self.classPlace].min()
             self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
         else: # classification
@@ -255,12 +256,14 @@ class Trainer:
             candidateSolution.printNetwork()
             populations.append(candidateSolution)
 
-        self.network = populations[0]
-        return self.network
-        # while not converged...
+            # while not converged...
             # mutation
             # crossover
             # selection
+
+        # temporary return code until the algorithm is built out
+        self.network = populations[0]
+        return self.network
 
     def geneticAlgorithm(self):
         pass

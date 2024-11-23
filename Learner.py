@@ -266,7 +266,7 @@ class Learner:
                 return Accuracy.FN
             else:
                 return Accuracy.FP
-    
+
     def forwardPass(self, batch, printSteps = False):
         if printSteps == True:
             print("FORWARD PASS")
@@ -275,34 +275,6 @@ class Learner:
             print
         #run batch through network
         return self.network.forwardPass(batch, printSteps)
-
-    def checkConvergence(self, printSteps = False):
-        if self.classificationType == 'regression':
-            targetRange = self.data[self.classPlace].max() - self.data[self.classPlace].min()
-            self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
-        else:
-            self.windowSize = 3
-
-        if len(self.losses) < self.windowSize*2:
-            if printSteps == True:
-                print("NOT ENOUGH DATA TO CHECK CONVERGENCE")
-            return False # not enough data to check convergence
-
-        # Calculate moving averages for the last two windows
-        recentAvg1 = np.mean(self.losses[-self.windowSize:])
-        recentAvg2 = np.mean(self.losses[-2 * self.windowSize:-self.windowSize])
-
-        # Check if the change in moving averages is below the tolerance
-        if abs(recentAvg1 - recentAvg2) < self.tolerance:
-            self.convergenceCount += 1
-            # If this condition is met over 'patience' epochs, consider converged
-            if self.convergenceCount >= self.patience:
-                return True
-        else:
-            # Reset counter if loss change exceeds tolerance
-            self.convergenceCount = 0
-
-        return False
 
     def run(self, printSteps = False):
         #run each fold and return classification info

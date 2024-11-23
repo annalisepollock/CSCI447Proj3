@@ -113,7 +113,6 @@ def main():
     for acc in forestTotalAccuracyStats:
         acc.print()
 
-    '''
     # # PLOT LOSS FOR EACH ITERATION OF CROSS-VALIDATION FOR EACH DATASET WITH 0, 1, AND 2 HIDDEN LAYERS IN THE NETWORK
     datasetClassificationInfo = [breastCancerLayerFoldClassifications, glassLayerFoldClassifications,
                                  soybeanLayerFoldClassifications, abaloneLayerFoldClassifications,
@@ -148,7 +147,7 @@ def main():
     # Adjust layout and display plot
     plt.tight_layout()
     plt.show()
-    '''
+
     # datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
     #                      abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]
     # datasetF1Scores = [[] for _ in range(3)]
