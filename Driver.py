@@ -63,7 +63,7 @@ def main():
 
     abaloneLayerFoldClassifications = abaloneInfo[0]  # 3 instances of arrays w/ 10 classification infos
     abaloneTotalClassification = abaloneInfo[1]
-    abaloneTotalAccuracyStats = abaloneInfo[2]
+    abaloneTotalAccuracyStats = abaloneInfo[2]'''
     
     print("COMPUTER HARDWARE")
     computerHardwareData = fetch_ucirepo(id=29)
@@ -87,7 +87,7 @@ def main():
 
     forestLayerFoldClassifications = forestInfo[0]  # 3 instances of arrays w/ 10 classification infos
     forestTotalClassification = forestInfo[1]
-    forestTotalAccuracyStats = forestInfo[2]'''
+    forestTotalAccuracyStats = forestInfo[2]
 
     print("BREAST CANCER ACCURACY")
     for acc in breastCancerTotalAccuracyStats:
@@ -103,7 +103,7 @@ def main():
 
     '''print("\nABALONE ACCURACY")
     for acc in abaloneTotalAccuracyStats:
-        acc.print()
+        acc.print()'''
 
     print("\nCOMPUTER HARDWARE ACCURACY")
     for acc in computerTotalAccuracyStats:
@@ -113,7 +113,7 @@ def main():
     for acc in forestTotalAccuracyStats:
         acc.print()
 
-    # # PLOT LOSS FOR EACH ITERATION OF CROSS-VALIDATION FOR EACH DATASET WITH 0, 1, AND 2 HIDDEN LAYERS IN THE NETWORK
+    ''''# # PLOT LOSS FOR EACH ITERATION OF CROSS-VALIDATION FOR EACH DATASET WITH 0, 1, AND 2 HIDDEN LAYERS IN THE NETWORK
     datasetClassificationInfo = [breastCancerLayerFoldClassifications, glassLayerFoldClassifications,
                                  soybeanLayerFoldClassifications, abaloneLayerFoldClassifications,
                                  computerLayerFoldClassifications, forestLayerFoldClassifications]
