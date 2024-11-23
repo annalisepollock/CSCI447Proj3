@@ -40,7 +40,7 @@ def main():
     glassLayerFoldClassifications = glassInfo[0]  # 3 instances of arrays w/ 10 classification infos
     glassTotalClassification = glassInfo[1]
     glassTotalAccuracyStats = glassInfo[2]
-    
+
     print("SOYBEAN")
     soybeanData = fetch_ucirepo(id=91)
     soybeanDataFrame = pd.DataFrame(soybeanData.data.original)
@@ -53,7 +53,7 @@ def main():
     soybeanTotalClassification = soybeanInfo[1]
     soybeanTotalAccuracyStats = soybeanInfo[2]
     
-    print("ABALONE")
+    '''print("ABALONE")
     abaloneData = fetch_ucirepo(id=1)
     abaloneDataFrame = pd.DataFrame(abaloneData.data.original)
     abaloneClean = cleaner.clean(abaloneDataFrame, [], 'Rings')
@@ -87,7 +87,7 @@ def main():
 
     forestLayerFoldClassifications = forestInfo[0]  # 3 instances of arrays w/ 10 classification infos
     forestTotalClassification = forestInfo[1]
-    forestTotalAccuracyStats = forestInfo[2]
+    forestTotalAccuracyStats = forestInfo[2]'''
 
     print("BREAST CANCER ACCURACY")
     for acc in breastCancerTotalAccuracyStats:
@@ -101,7 +101,7 @@ def main():
     for acc in soybeanTotalAccuracyStats:
         acc.print()
 
-    print("\nABALONE ACCURACY")
+    '''print("\nABALONE ACCURACY")
     for acc in abaloneTotalAccuracyStats:
         acc.print()
 
@@ -146,7 +146,7 @@ def main():
 
     # Adjust layout and display plot
     plt.tight_layout()
-    plt.show()
+    plt.show()'''
 
     # datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
     #                      abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]

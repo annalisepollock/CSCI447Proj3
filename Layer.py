@@ -29,7 +29,11 @@ class Layer:
     def getNext(self):
         return self.next
     def getPrev(self):
-        return self.prev 
+        return self.prev
+
+    def setWeights(self, newWeights):
+        self.weights = newWeights
+
     def getWeights(self):
         return self.weights
     

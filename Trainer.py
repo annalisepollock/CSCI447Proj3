@@ -153,46 +153,8 @@ class Trainer:
 
         # initialize error
         error = testClasses - currLayer.activations
-        errorAvg = np.mean(error, axis=0)
-
-        epsilon = 1e-10  # small value to avoid log(0)
-        predictions = np.clip(currLayer.activations, epsilon, 1 - epsilon)  # clip values for numerical stability
-
-        if self.classificationType == "classification":
-            # Cross-Entropy Loss for Classification
-            numSamples = testClasses.shape[1]
-            loss = -(1 / numSamples) * (np.sum(np.log(predictions) * testClasses))
-            if printSteps == True:
-                print("ERROR AVG")
-                print(errorAvg)
-                print()
-                print("LOSS FOR CLASSIFICATION: " + str(loss))
-            
-            self.losses.append(loss)
-            if printSteps == True:
-                print("APPENDING LOSS")
-                print(self.losses)
-        else:
-            # Mean Squared Error for Regression
-            if printSteps == True:
-                print("ERROR AVG")
-                print(errorAvg)
-                print(testClasses.shape)
-            print()
-            print("target vals: ")
-            print(testClasses)
-            print("predictions: ")
-            print(currLayer.activations[0])
-
-            print("error for regression: " + str(error))
-            loss = np.mean((predictions[0] - testClasses) ** 2)
-            print("loss for regression: " + str(loss))
-            if printSteps == True:
-                print("LOSS FOR REGRESSION: " + str(loss))
-            self.losses.append(loss)
-            if printSteps == True:
-                print("APPENDING LOSS")
-                print(self.losses)
+        loss = self.helperCalculateLoss(currLayer.activations, testClasses, True)
+        self.losses.append(loss)
 
         # weight update for output layer
         outputWeightUpdate = self.learningRate * np.dot(error,
@@ -249,42 +211,174 @@ class Trainer:
 
     def differentialEvolution(self):
         print("RUNNING DIFFERENTIAL EVOLUTION...")
-        population = [] # array of networks
+
+        # array of networks
+        population = []
+        # reset losses for fold
+        self.losses = []
+        # if testing batch size will be different...
+        if self.network.getBatchSize() != self.batchSize:
+            self.network.setBatchSize(self.batchSize)
+        # create batches with train data
+        batches = self.network.createBatches(self.trainData)
+        batchIndex = 0
 
         # randomly generate N populations
         for i in range(self.populationSize):
             # create a deep copy of the current network (all new objects + references)
-            tempNetwork = copy.deepcopy(self.network)
-            tempNetwork.reInitialize()
-            candidateSolution = tempNetwork # network with new randomized weights
+            candidateSolution = copy.deepcopy(self.network)
+            candidateSolution.reInitialize() # network with new initialized weights
             candidateSolution.printNetwork()
             population.append(candidateSolution)
 
         # TO-DO: while not converged...
-        # for each solution...
-        for i in range(len(population)):
-            print("MUTATION ON " + str(i+1) + " CANDIDATE SOLUTION")
-            sol = population[i]
-            # TO-DO: calculate fitness
+        h = 0
+        while not self.checkConvergence():
+            print("DIFF EVOLUTION ROUND " + str(h))
+            # for each solution in the population...
+            for i in range(len(population)):
+                print("MUTATION ON " + str(i+1) + " CANDIDATE SOLUTION")
+                sol = population[i]
 
-            # mutation
-            donor = []
-            # randomly select three candidate solutions that are not the current solution
-            x1, x2, x3 = random.sample([p for k, p in enumerate(population) if k != i], 3)
+                numBatches = 3
+                candidateFitness = self.helperCalculateFitness(sol, numBatches, batches, batchIndex)
+                batchIndex += numBatches
 
-            # perform calculation for all sets of weights (exclude output layer because it will not hold weights)
-            for j in range(len(sol.getLayers())-1):
-                layerDonor = x1.getLayers()[j].getWeights() + self.scalingFactor*(x2.getLayers()[j].getWeights() - x3.getLayers()[j].getWeights())
-                donor.append(layerDonor)
+                # extract weights for each layer from the Layer objects
+                solWeights = []
 
-            # crossover
-            offspring = []
+                for j in range(len(sol.getLayers())-1):
+                    solutionLayer = sol.getLayers()[j].getWeights()
+                    solWeights.append(solutionLayer)
 
-        # selection
+                # MUTATION
+                donor = []
+                # randomly select three candidate solutions that are not the current solution
+                x1, x2, x3 = random.sample([p for k, p in enumerate(population) if k != i], 3)
 
-        # temporary return code until the algorithm is built out
-        self.network = population[0]
-        return self.network
+                # perform calculation for all sets of weights (exclude output layer because it will not hold weights)
+                for j in range(len(sol.getLayers())-1):
+                    layerDonor = x1.getLayers()[j].getWeights() + self.scalingFactor*(x2.getLayers()[j].getWeights() - x3.getLayers()[j].getWeights())
+                    donor.append(layerDonor)
+
+                # CROSSOVER
+                offspring = []
+                for candidateLayer, donorLayer in zip(solWeights, donor):
+                    # Check that corresponding layers have matching shapes
+                    assert candidateLayer.shape == donorLayer.shape, "Target and donor layers must have the same shape" # return error message if false
+
+                    # Generate random mask and combine weights
+                    binomialEval = np.random.rand(*candidateLayer.shape) <= self.crossoverProbability # is randomly generated value < alpha?
+                    offspringLayer = np.where(binomialEval, candidateLayer, donorLayer)
+                    offspring.append(offspringLayer)
+
+                # create a network with the calculated offspring weights + biases
+                offspringSolution = copy.deepcopy(self.network)
+                offspringLayers = offspringSolution.getLayers()
+                for i in range(len(offspringLayers)-1):
+                    offspringLayers[i].setWeights(offspring[i])
+
+                # calculate fitness of offspring, determine if it is better than current candidate
+                offspringFitness = self.helperCalculateFitness(offspringSolution, numBatches, batches, batchIndex)
+                batchIndex += numBatches
+
+                # SELECTION
+                if offspringFitness < candidateFitness:
+                    population[i] = offspringSolution
+                    self.losses.append(offspringFitness)
+                else:
+                    self.losses.append(candidateFitness)
+
+                h += 1
+
+        # RETURN BEST INDIVIDUAL CANDIDATE SOLUTION
+        candidateFitnessValues = []
+        bestCandidateIndex = 0
+        for candidate in population:
+            numBatches = 3
+            # calculate fitness of offspring, determine if it is better than current candidate
+            candidateFitness = self.helperCalculateFitness(candidate, numBatches, batches, batchIndex)
+            candidateFitnessValues.append(candidateFitness)
+
+        bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
+        return population[bestCandidateIndex]
+
+    def helperCalculateFitness(self, solution, numBatches, batches, batchIndex):
+        # calculate loss numBatches times and return the average
+        solLoss = []
+
+        # calculate fitness of current candidate; pass a given # of batches in and calculate avg loss
+        for k in range(numBatches):
+            # get batch of data
+            batch = batches[batchIndex % len(batches)]
+            if solution.getBatchSize() != batch.shape[0]:
+                solution.setBatchSize(batch.shape[0])
+
+            batchClasses = batch[self.classPlace].to_numpy()
+            batchData = batch.drop(columns=[self.classPlace])
+
+            # test weights and biases on current
+            predictions = solution.forwardPass(batchData)
+            targetValues = batchClasses
+
+            # prepare output for loss calculation
+            if (self.classificationType == "classification"):
+                predictions = predictions[1]
+                oneHot = np.zeros((len(batchClasses), len(self.classes)))
+                classesList = self.classes.tolist()
+                for i in range(len(batchClasses)):
+                    oneHot[i][classesList.index(batchClasses[i])] = 1
+                targetValues = oneHot.T
+
+            outputLoss = self.helperCalculateLoss(predictions, targetValues, True)
+            solLoss.append(outputLoss)
+            batchIndex += 1
+
+        return np.mean(solLoss)
+
+    def helperCalculateLoss(self, output, targets, printSteps):
+        loss = 0
+        error = targets - output
+        errorAvg = np.mean(error, axis=0)
+
+        epsilon = 1e-10  # small value to avoid log(0)
+        predictions = np.clip(output, epsilon, 1 - epsilon)  # clip values for numerical stability
+
+        if self.classificationType == "classification":
+            # Cross-Entropy Loss for Classification
+            numSamples = targets.shape[1]
+            loss = -(1 / numSamples) * (np.sum(np.log(predictions) * targets))
+            if printSteps == True:
+                print("ERROR AVG")
+                print(errorAvg)
+                print()
+                print("LOSS FOR CLASSIFICATION: " + str(loss))
+
+            if printSteps == True:
+                print("APPENDING LOSS")
+                print(self.losses)
+        else:
+            # Mean Squared Error for Regression
+            if printSteps == True:
+                print("ERROR AVG")
+                print(errorAvg)
+                print(targets.shape)
+            print()
+            print("target vals: ")
+            print(targets)
+            print("predictions: ")
+            print(output[0])
+
+            print("error for regression: " + str(error))
+            loss = np.mean((predictions[0] - targets) ** 2)
+            print("loss for regression: " + str(loss))
+            if printSteps == True:
+                print("LOSS FOR REGRESSION: " + str(loss))
+            if printSteps == True:
+                print("APPENDING LOSS")
+                print(self.losses)
+
+        return loss
 
     def geneticAlgorithm(self):
         pass
