@@ -8,7 +8,7 @@ from ClassificationInfo import Accuracy
 
 class Learner: 
 
-    def __init__ (self, data, classificationType, classPlace, algorithm="differentialEvolution"):
+    def __init__ (self, data, classificationType, classPlace, algorithm="backPropagation"):
         # convergence testing
         self.patience = 2
         self.windowSize = 1
