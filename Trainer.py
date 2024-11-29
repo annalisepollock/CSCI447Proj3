@@ -381,4 +381,92 @@ class Trainer:
         return loss
 
     def geneticAlgorithm(self):
-        pass
+        print("RUNNING GENETIC ALGORITHM...")
+        candidateSolutions = []
+        self.losses = []
+
+        if self.network.getBatchSize() != self.batchSize:
+            self.network.setBatchSize(self.batchSize)
+        # create batches with train data
+        batches = self.network.createBatches(self.trainData)
+        batchIndex = 0
+
+        # randomly generate N populations
+        for i in range(self.populationSize):
+            # create a deep copy of the current network (all new objects + references)
+            candidateSolution = copy.deepcopy(self.network)
+            candidateSolution.reInitialize() # network with new initialized weights
+            candidateSolution.printNetwork()
+            candidateSolution.append(candidateSolution)
+        
+        #Evaluate fitness of each candidate solution
+        #To do: check convergence
+        while not self.checkConvergence():
+            candidateFitnesses = []
+            newPopulation = []
+            for i in range(len(candidateSolutions)):
+                print("EVALUATING FITNESS OF CANDIDATE SOLUTION " + str(i+1))
+                sol = candidateSolutions[i]
+                numBatches = 3
+                candidateFitness = self.helperCalculateFitness(sol, numBatches, batches, batchIndex)
+                batchIndex += numBatches
+                candidateFitnesses.append(candidateFitness)
+            
+            #create new population using selection, mutation, crossover
+            while len(newPopulation) < len(candidateSolutions):
+                #implement tounament selection - randomly select 7 % of the population and select the best two candidates
+                tournamentSize = int(0.07 * len(candidateSolutions))
+                tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
+                
+                parentIndices = tournament.argsort()[-2:][::-1]
+
+                parent1 = candidateSolutions[parentIndices[0]]
+                parent2 = candidateSolutions[parentIndices[1]]
+
+                #implement crossover and mutation - randomly select a crossover point 
+                crossoverPoint = random.randint(0, len(parent1.getLayers()) - 1)
+                child1, child2 = self.crossover(parent1, parent2, crossoverPoint)
+                #add children to new population
+                newPopulation.append(child1)
+                newPopulation.append(child2)
+            
+            candidateSolutions = newPopulation
+        
+        # RETURN BEST INDIVIDUAL CANDIDATE SOLUTION
+        candidateFitnessValues = []
+        bestCandidateIndex = 0
+        for candidate in candidateSolutions:
+            numBatches = 3
+            # calculate fitness of offspring, determine if it is better than current candidate
+            candidateFitness = self.helperCalculateFitness(candidate, numBatches, batches, batchIndex)
+            candidateFitnessValues.append(candidateFitness)
+
+        bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
+        return candidateSolutions[bestCandidateIndex]
+                
+    def crossover(self, parent1, parent2, crossoverPoint, mutationRate = 0.1):
+        #create networks to hold children
+        child1 = copy.deepcopy(self.network)
+        child2 = copy.deepcopy(self.network)
+
+        #loop through each layer in the parent networks
+        for i in range(len(parent1.getLayers())):
+            mutation = random.random() < mutationRate
+            #if we are before crossover point child 1 gets weights from parent 1 and child 2 gets weights from parent 2
+            if i <= crossoverPoint:
+                child1.getLayers()[i].setWeights(parent1.getLayers()[i].getWeights())
+                child2.getLayers()[i].setWeights(parent2.getLayers()[i].getWeights())
+
+            #if we are after the crossover point child 1 gets weights from parent 2 and child 2 gets weights from parent 1
+            else:
+                child1.getLayers()[i].setWeights(parent2.getLayers()[i].getWeights())
+                child2.getLayers()[i].setWeights(parent1.getLayers()[i].getWeights())
+            
+            #if mutation should happen for this layer add a random value to the weights
+            if mutation:
+                    child1.getLayers()[i].setWeights(child1.getLayers()[i].getWeights() + np.random.uniform(-1, 1, child1.getLayers()[i].getWeights().shape))
+                    child2.getLayers()[i].setWeights(child2.getLayers()[i].getWeights() + np.random.uniform(-1, 1, child2.getLayers()[i].getWeights().shape))
+        
+        return child1, child2
+
+
