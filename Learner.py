@@ -8,7 +8,7 @@ from ClassificationInfo import Accuracy
 
 class Learner: 
 
-    def __init__ (self, data, classificationType, classPlace, algorithm="differentialEvolution"):
+    def __init__ (self, data, classificationType, classPlace, algorithm="geneticAlgorithm"):
         # convergence testing
         self.patience = 2
         self.windowSize = 1
@@ -28,14 +28,23 @@ class Learner:
             self.accuracyThreshold = 0.3 * data[classPlace].mean()
         else:
             raise ValueError("Invalid classification type")
-        self.learningRate = 0.0001
-        self.momentum = 0.9
+        self.learningRate = -1 #backpropagation
+        self.momentum = -1 #backpropagation
+        self.crossoverRate = -1 #genetic algorithm
+        self.mutationRate = -1 #genetic algorithm
+        self.populationSize = -1 #GA DE PSO
+        self.scalingFactor = -1 #DE
+        self.binomialCrossoverProb = -1 #DE
+        self.inertia = -1 #PSO
+        self.cognitiveUpdateRate = -1 #PSO
+        self.socialUpdateRate = -1 #PSO
         self.hiddenLayers = 1
         self.neuronsPerLayer = self.data.shape[0]
         self.batchSize = 10
         self.features = self.data.shape[1] - 1
         self.classes = self.data[classPlace].unique()
         self.network = self.tuneData()
+        
     def setLosses(self, losses):
         self.losses = losses
     
@@ -67,50 +76,21 @@ class Learner:
         return oscillations >= threshold
         
     def tuneData(self):
-        self.momentum = 0.9
-        self.learningRate = 0.1
-        #define output
         if self.classificationType == "classification":
             outputSize = len(self.classes)
         else:
             outputSize = 1
-        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
-        momentumSet = False
-        learningRateSet = False
+        
         foldIndex = 0
-        #TRAINING MOMENTUM
-        #decrease as loss is oscillating
-
-        while not momentumSet:
-            print("training momentum", str(self.momentum))
-            fold = self.folds[foldIndex % len(self.folds)]
-            if self.momentum <= 0.5:
-                momentumSet = True
-                self.momentum = 0.5
-                break
-            momentumTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
-            self.network = momentumTrainer.train()
-            print("CURRENT LOSSES: ")
-            print(self.losses)
-            print("OSCILLATION:", self.checkOscillation(self.losses))
-            if self.checkOscillation(self.losses):
-                self.momentum -= 0.1
-            else:
-                momentumSet = True
-            foldIndex += 1
-       #TUNING LEARNING RATE
-        #decrease as loss is oscillating
-        while not learningRateSet:
-            if self.learningRate == 0.0001:
-                learningRateSet = True
-                break
-            learningRateTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
-            self.network = learningRateTrainer.train()
-            if self.checkOscillation(self.losses):
-                self.learningRate = self.learningRate / 10
-            else:
-                learningRateSet = True
-            foldIndex += 1
+        fold = self.folds[foldIndex % len(self.folds)]
+        if self.algorithm == "backpropagation":
+            self.tuneBackprop()
+        if self.algorithm == "geneticAlgorithm":
+            self.tuneGenetic()
+        if self.algorithm == "differentialEvolution":
+            self.tuneDifferentialEvolution()
+        if self.algorithm == "particleSwarm":
+            self.tuneParticleSwarm()
         
         nueronsPerLayer = self.data.shape[0]
         #set 5 possible nueron values with a max at the number of input values
@@ -121,7 +101,7 @@ class Learner:
         for nuerons in nueronValues:
             self.neuronsPerLayer = nuerons
             self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
-            nueronTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
+            nueronTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.population, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
             self.network = nueronTrainer.train()
             output = self.test(self.testData)
             foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
@@ -142,7 +122,7 @@ class Learner:
         for batchSize in batchSizes:
             self.batchSize = batchSize
             self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
-            batchTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
+            batchTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.population, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
             self.network = batchTrainer.train()
             output = self.test(self.testData)
             foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
@@ -155,6 +135,57 @@ class Learner:
             self.batchSize = int(self.data.shape[0] / 10)
         
         return Network.Network(0, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
+    
+    def tuneBackprop(self):
+        self.momentum = 0.9
+        self.learningRate = 0.1
+        foldIndex = 0
+        momentumSet = False
+        learningRateSet = False
+        while not momentumSet:
+            print("training momentum", str(self.momentum))
+            fold = self.folds[foldIndex % len(self.folds)]
+            if self.momentum <= 0.5:
+                momentumSet = True
+                self.momentum = 0.5
+                break
+            momentumTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.population, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            self.network = momentumTrainer.train()
+            print("CURRENT LOSSES: ")
+            print(self.losses)
+            print("OSCILLATION:", self.checkOscillation(self.losses))
+            if self.checkOscillation(self.losses):
+                self.momentum -= 0.1
+            else:
+                momentumSet = True
+            foldIndex += 1
+        #TUNING LEARNING RATE
+        #decrease as loss is oscillating
+        while not learningRateSet:
+            if self.learningRate == 0.0001:
+                learningRateSet = True
+                break
+            learningRateTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.population, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            self.network = learningRateTrainer.train()
+            if self.checkOscillation(self.losses):
+                self.learningRate = self.learningRate / 10
+            else:
+                learningRateSet = True
+            foldIndex += 1
+    
+    def tuneGenetic(self):
+        #TUNE CROSSOVER RATE
+        #TUNE MUTATION RATE
+        pass
+    def tuneDifferentialEvolution(self):
+        #TUNE SCALING FACTOR
+        #TUNE BINOMIAL CROSSOVER PROBABILITY
+        pass
+    def tuneParticleSwarm(self):
+        #TUNE INERTIA
+        #TUNE COGNITIVE UPDATE RATE
+        #TUNE SOCIAL UPDATE RATE
+        pass
 
     def getNetwork(self):
         return self.network
@@ -284,7 +315,7 @@ class Learner:
             self.resetNetwork()
             trainData = self.data.drop(fold.index)
             testData = fold
-            trainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index))
+            trainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.population, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
             self.network = trainer.train()
             classification = self.test(self.testData)
             classificationInfos.append(classification)

@@ -5,7 +5,25 @@ import numpy as np
 import Network
 
 class Trainer:
-    def __init__(self, algorithm, learner, network, learningRate, momentum, batchSize ,classificationType, classPlace, trainData):
+    def __init__(self, 
+                 algorithm, 
+                 learner, 
+                 network, 
+                 learningRate, 
+                 momentum, 
+                 batchSize ,
+                 classificationType, 
+                 classPlace, 
+                 trainData, 
+                 population,
+                 crossoverRate, 
+                 mutationRate,
+                 binomialCrossoverRate,
+                 scalingFactor, 
+                 inertia,
+                 cognitiveComponent,
+                 socialComponent,
+                 ):
         # attributes used for convergence
         self.patience = 2
         self.windowSize = 1
@@ -15,8 +33,8 @@ class Trainer:
         # end attributes used for convergence
 
         # initialize values for genetic and differential evolution algorithms (values will be tuned)
-        self.populationSize = 5
-        self.scalingFactor = 1
+        self.populationSize = 15
+        self.scalingFactor = 10
         self.crossoverProbability = .8
 
         self.algorithm = algorithm
@@ -330,7 +348,7 @@ class Trainer:
                     oneHot[i][classesList.index(batchClasses[i])] = 1
                 targetValues = oneHot.T
 
-            outputLoss = self.helperCalculateLoss(predictions, targetValues, True)
+            outputLoss = self.helperCalculateLoss(predictions, targetValues, False)
             solLoss.append(outputLoss)
             batchIndex += 1
 
@@ -363,13 +381,13 @@ class Trainer:
                 print("ERROR AVG")
                 print(errorAvg)
                 print(targets.shape)
-            print()
-            print("target vals: ")
-            print(targets)
-            print("predictions: ")
-            print(output[0])
+                print()
+                print("target vals: ")
+                print(targets)
+                print("predictions: ")
+                print(output[0])
 
-            print("error for regression: " + str(error))
+                print("error for regression: " + str(error))
             loss = np.mean((predictions[0] - targets) ** 2)
             print("loss for regression: " + str(loss))
             if printSteps == True:
@@ -396,34 +414,41 @@ class Trainer:
             # create a deep copy of the current network (all new objects + references)
             candidateSolution = copy.deepcopy(self.network)
             candidateSolution.reInitialize() # network with new initialized weights
-            candidateSolution.printNetwork()
-            candidateSolution.append(candidateSolution)
+            candidateSolutions.append(candidateSolution)
         
         #Evaluate fitness of each candidate solution
         #To do: check convergence
-        while not self.checkConvergence():
+        #while not self.checkConvergence():
+        for i in range(15):
             candidateFitnesses = []
             newPopulation = []
+            print("GENERATION " + str(i))
+            print("Evaluating fitness of candidate solutions")
             for i in range(len(candidateSolutions)):
-                print("EVALUATING FITNESS OF CANDIDATE SOLUTION " + str(i+1))
                 sol = candidateSolutions[i]
                 numBatches = 3
                 candidateFitness = self.helperCalculateFitness(sol, numBatches, batches, batchIndex)
                 batchIndex += numBatches
                 candidateFitnesses.append(candidateFitness)
+                self.losses.append(candidateFitness)
             
             #create new population using selection, mutation, crossover
             while len(newPopulation) < len(candidateSolutions):
-                #implement tounament selection - randomly select 7 % of the population and select the best two candidates
-                tournamentSize = int(0.07 * len(candidateSolutions))
-                tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
-                
-                parentIndices = tournament.argsort()[-2:][::-1]
+                #implement tounament selection - randomly select 20 % of the population and select the best two candidates
+                print("SELECTING PARENTS")
+                tournamentSize = int(0.2 * len(candidateSolutions))
 
-                parent1 = candidateSolutions[parentIndices[0]]
-                parent2 = candidateSolutions[parentIndices[1]]
+                tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
+                parentIndice = candidateFitnesses.index(min(tournament))
+                parent1 = candidateSolutions[parentIndice]
+
+                tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
+                parentIndice = candidateFitnesses.index(min(tournament))
+                parent2 = candidateSolutions[parentIndice]
+                
 
                 #implement crossover and mutation - randomly select a crossover point 
+                print("CROSSOVER AND MUTATION")
                 crossoverPoint = random.randint(0, len(parent1.getLayers()) - 1)
                 child1, child2 = self.crossover(parent1, parent2, crossoverPoint)
                 #add children to new population
@@ -451,21 +476,27 @@ class Trainer:
 
         #loop through each layer in the parent networks
         for i in range(len(parent1.getLayers())):
-            mutation = random.random() < mutationRate
-            #if we are before crossover point child 1 gets weights from parent 1 and child 2 gets weights from parent 2
-            if i <= crossoverPoint:
-                child1.getLayers()[i].setWeights(parent1.getLayers()[i].getWeights())
-                child2.getLayers()[i].setWeights(parent2.getLayers()[i].getWeights())
+            parent1Layer = parent1.getLayers()[i].getWeights()
+            parent2Layer = parent2.getLayers()[i].getWeights()
 
-            #if we are after the crossover point child 1 gets weights from parent 2 and child 2 gets weights from parent 1
-            else:
-                child1.getLayers()[i].setWeights(parent2.getLayers()[i].getWeights())
-                child2.getLayers()[i].setWeights(parent1.getLayers()[i].getWeights())
+            child1LayerWeights = np.zeros(parent1Layer.shape)
+            child2LayerWeights = np.zeros(parent2Layer.shape)
+
+            for j in range(len(parent1Layer)):
+                mutation = random.random() < mutationRate
+                if j <= crossoverPoint:
+                    child1LayerWeights[j] = parent1Layer[j]
+                    child2LayerWeights[j] = parent2Layer[j]
+                else: 
+                    child1LayerWeights[j] = parent2Layer[j]
+                    child2LayerWeights[j] = parent1Layer[j]
+                if mutation:
+                    child1LayerWeights[j] += np.random.uniform(-1, 1, child1LayerWeights[j].shape)
+                    child2LayerWeights[j] += np.random.uniform(-1, 1, child2LayerWeights[j].shape)
             
-            #if mutation should happen for this layer add a random value to the weights
-            if mutation:
-                    child1.getLayers()[i].setWeights(child1.getLayers()[i].getWeights() + np.random.uniform(-1, 1, child1.getLayers()[i].getWeights().shape))
-                    child2.getLayers()[i].setWeights(child2.getLayers()[i].getWeights() + np.random.uniform(-1, 1, child2.getLayers()[i].getWeights().shape))
+            child1.getLayers()[i].setWeights(child1LayerWeights)
+            child2.getLayers()[i].setWeights(child2LayerWeights)
+                
         
         return child1, child2
 
