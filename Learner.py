@@ -91,6 +91,7 @@ class Learner:
         else:
             if self.algorithm == "geneticAlgorithm":
                 populationRange = np.linspace(20, 100, 6).astype(int)
+                self.tunePopulationSize(populationRange)
                 self.tuneGenetic()
             if self.algorithm == "differentialEvolution":
                 #define population range
@@ -204,6 +205,7 @@ class Learner:
     def tuneGenetic(self):
         #TUNE CROSSOVER RATE
         #set 5 possible nueron values with a max at the number of input values
+        foldIndex = 0
         crossoverValues = np.linspace(0.6, 0.8, 5)
         accuracy = 0
         self.mutationRate = 0.1
