@@ -23,6 +23,7 @@ class AlgorithmAccuracy:
         self.totalAccuracy = self.calculateTotalAccuracy()
         self.numFeatures = numFeatures
         self.name = name
+        self.losses = stats.loss
     def confusionMatrix(self):
         return {"TP": self.stats.TP, "FP": self.stats.FP, "FN": self.stats.FN, "TN": self.stats.TN}
     
@@ -48,3 +49,4 @@ class AlgorithmAccuracy:
         print("Total Accuracy: " + str(self.totalAccuracy))
         print("Confusion Matrix: " + str(self.confusionMatrix()))
         print("Number of Features: " + str(self.numFeatures))
+        print("Loss: " + str(self.losses[-10:]))
