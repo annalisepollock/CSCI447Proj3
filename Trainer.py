@@ -533,8 +533,7 @@ class Trainer:
         
         #Evaluate fitness of each candidate solution
         #To do: check convergence
-        #while not self.checkConvergence():
-        for i in range(15):
+        while not self.checkConvergence() and batchIndex < len(batches):
             candidateFitnesses = []
             newPopulation = []
             print("GENERATION " + str(i))

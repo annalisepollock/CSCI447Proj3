@@ -80,6 +80,8 @@ class Learner:
             outputSize = len(self.classes)
         else:
             outputSize = 1
+
+        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
         
         foldIndex = 0
         fold = self.folds[foldIndex % len(self.folds)]
@@ -88,8 +90,7 @@ class Learner:
         
         else:
             if self.algorithm == "geneticAlgorithm":
-                #define population range
-                #tunePopulationSize([5, 10, 15, 20, 25])
+                populationRange = np.linspace(20, 100, 6).astype(int)
                 self.tuneGenetic()
             if self.algorithm == "differentialEvolution":
                 #define population range
@@ -206,12 +207,6 @@ class Learner:
             foldIndex += 1
     
     def tuneGenetic(self):
-        foldIndex = 0
-        if self.classificationType == "classification":
-            outputSize = len(self.classes)
-        else:
-            outputSize = 1
-        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
         #TUNE CROSSOVER RATE
         #set 5 possible nueron values with a max at the number of input values
         crossoverValues = np.linspace(0.6, 0.8, 5)
@@ -385,9 +380,9 @@ class Learner:
             self.resetNetwork()
             trainData = self.data.drop(fold.index)
             testData = fold
-            trainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            trainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, trainData, self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
             self.network = trainer.train()
-            classification = self.test(self.testData)
+            classification = self.test(testData)
             classificationInfos.append(classification)
             foldCount+=1
             
