@@ -483,16 +483,21 @@ class Trainer:
             child2LayerWeights = np.zeros(parent2Layer.shape)
 
             for j in range(len(parent1Layer)):
-                mutation = random.random() < mutationRate
-                if j <= crossoverPoint:
-                    child1LayerWeights[j] = parent1Layer[j]
-                    child2LayerWeights[j] = parent2Layer[j]
-                else: 
-                    child1LayerWeights[j] = parent2Layer[j]
-                    child2LayerWeights[j] = parent1Layer[j]
-                if mutation:
-                    child1LayerWeights[j] += np.random.uniform(-1, 1, child1LayerWeights[j].shape)
-                    child2LayerWeights[j] += np.random.uniform(-1, 1, child2LayerWeights[j].shape)
+                parent1Layer = parent1.getLayers()[i].getWeights()
+                parent2Layer = parent2.getLayers()[i].getWeights()
+
+                # Vectorized crossover
+                child1LayerWeights = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent1Layer, parent2Layer)
+                child2LayerWeights = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent2Layer, parent1Layer)
+
+                # Vectorized mutation
+                mutationMask = np.random.rand(*child1LayerWeights.shape) < mutationRate
+                mutationValues = np.random.uniform(-1, 1, child1LayerWeights.shape)
+                child1LayerWeights += mutationMask * mutationValues
+                child2LayerWeights += mutationMask * mutationValues
+
+                child1.getLayers()[i].setWeights(child1LayerWeights)
+                child2.getLayers()[i].setWeights(child2LayerWeights)
             
             child1.getLayers()[i].setWeights(child1LayerWeights)
             child2.getLayers()[i].setWeights(child2LayerWeights)
