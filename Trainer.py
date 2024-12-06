@@ -1,6 +1,7 @@
 import copy
 import random
 
+import sys
 import numpy as np
 import Network
 
@@ -207,7 +208,120 @@ class Trainer:
             print(currLayer.prev.weights)
     
     def swarmOptimization(self):
-        pass
+        print("RUNNING PARTICLE SWARM OPTIMIZATION...")
+        # networks that populations are derived from
+        population = []
+        # make population of particles, which contain 2d arrays of each layer of weights 
+        swarmPopulation = []
+        # particle velocities
+        swarmVelocities = []
+        # personal best weight for each individual weight
+        personalBest = []
+        # personal best set of weights for each particle (size of population, contains networks)
+        personalBestForParticle = []
+        # inertia, cognitive/social coefficients (will make hyperparameters later)
+        w = .5
+        c1 = 2
+        c2 = 2
+        # if testing batch size will be different...
+        if self.network.getBatchSize() != self.batchSize:
+            self.network.setBatchSize(self.batchSize)
+        # create batches with train data
+        batches = self.network.createBatches(self.trainData)
+        batchIndex = 0
+
+        # randomly generate N amount of particles
+        for i in range(self.populationSize):
+            particle = [] # array of weights from each layer of network
+            # create a deep copy of the current network
+            candidateSolution = copy.deepcopy(self.network)
+            candidateSolution.reInitialize() # network with new initialized weights
+            particleVelocities = []
+            for layer in candidateSolution.getLayers():
+                weightArray = layer.getWeights()
+                particle.append(weightArray)
+                # initialize velocities to 0
+                particleVelocities.append(np.zeros(weightArray.shape))
+            swarmPopulation.append(particle)
+            swarmVelocities.append(particleVelocities)
+            population.append(candidateSolution)
+            personalBest.append(particle)
+            personalBestForParticle.append(candidateSolution)
+
+        # find initial global best solution
+        candidateFitnessValues = []
+        bestCandidateIndex = 0
+        for candidate in population:
+            numBatches = 3
+            # calculate fitness of offspring, determine if it is better than current candidate
+            candidateFitness = self.helperCalculateFitness(candidate, numBatches, batches, batchIndex)
+            candidateFitnessValues.append(candidateFitness)
+        
+        bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
+        
+        # get weights from global solution
+        globalSolutionWeights = []
+        for layer in population[bestCandidateIndex].getLayers():
+            globalSolutionWeightLayer = layer.getWeights()
+            globalSolutionWeights.append(globalSolutionWeightLayer)
+
+        print(swarmPopulation[0][0][0][0])
+        print(personalBest[0][0][0][0])
+        print(swarmVelocities[0][0][0][0])
+        print(globalSolutionWeights[0][0][0])
+
+        # while it hasn't converged
+        while not self.checkConvergence():
+            # for each particle
+            for particle in range(len(swarmPopulation)):
+                # for each set of weights in a layer
+                for weights in range(len(swarmPopulation[particle])):
+                    # for each row of weights in weight array
+                    for weightRow in range(len(swarmPopulation[particle][weights])):
+                        # for each single weight individually
+                        for weight in range(len(swarmPopulation[particle][weights][weightRow])):
+                            # compute each new velocity individually
+                            # generate 2 random values for this function
+                            r1 = random.random()
+                            r2 = random.random()
+                            swarmVelocities[particle][weights][weightRow][weight] = w*swarmVelocities[particle][weights][weightRow][weight] + c1*r1*(personalBest[particle][weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight]) + c2*r2*(globalSolutionWeights[weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight])
+                            # compute position of specific dimension of particle 
+                            swarmPopulation[particle][weights][weightRow][weight] = swarmPopulation[particle][weights][weightRow][weight] + swarmVelocities[particle][weights][weightRow][weight]
+                # update personalbest for this particle
+                newNetwork = copy.deepcopy(population[particle])
+                newLayers = newNetwork.getLayers()
+                for weights in range(len(newLayers)):
+                    newLayers[weights].setWeights(swarmPopulation[particle][weights])
+                # compare fitnesses of both old and new network
+                newNetworkFitness = self.helperCalculateFitness(newNetwork, numBatches, batches, batchIndex)
+                oldNetworkFitness = self.helperCalculateFitness(population[particle], numBatches, batches, batchIndex)
+
+                if oldNetworkFitness < newNetworkFitness:
+                    population[particle] = newNetwork
+
+                # update new global solution
+
+                candidateFitnessValues = []
+                bestCandidateIndex = 0
+                for candidate in population:
+                    numBatches = 3
+                    # calculate fitness of each candidate, determine if it is better than current candidate
+                    candidateFitness = self.helperCalculateFitness(candidate, numBatches, batches, batchIndex)
+                    candidateFitnessValues.append(candidateFitness)
+
+                bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
+                
+        # RETURN BEST INDIVIDUAL CANDIDATE SOLUTION
+        candidateFitnessValues = []
+        bestCandidateIndex = 0
+        for candidate in population:
+            numBatches = 3
+            # calculate fitness of each candidate, determine if it is better than current candidate
+            candidateFitness = self.helperCalculateFitness(candidate, numBatches, batches, batchIndex)
+            candidateFitnessValues.append(candidateFitness)
+
+        bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
+        return population[bestCandidateIndex]
 
     def differentialEvolution(self):
         print("RUNNING DIFFERENTIAL EVOLUTION...")
