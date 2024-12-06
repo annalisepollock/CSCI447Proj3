@@ -148,11 +148,6 @@ class Learner:
     
     def tunePopulationSize(self, populationRange):
         foldIndex = 0
-        if self.classificationType == "classification":
-            outputSize = len(self.classes)
-        else:
-            outputSize = 1
-        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
         #TUNE POPULATION SIZE
         #set 5 possible nueron values with a max at the number of input values
         accuracy = 0
