@@ -85,12 +85,21 @@ class Learner:
         fold = self.folds[foldIndex % len(self.folds)]
         if self.algorithm == "backpropagation":
             self.tuneBackprop()
-        if self.algorithm == "geneticAlgorithm":
-            self.tuneGenetic()
-        if self.algorithm == "differentialEvolution":
-            self.tuneDifferentialEvolution()
-        if self.algorithm == "particleSwarm":
-            self.tuneParticleSwarm()
+        
+        else:
+            if self.algorithm == "geneticAlgorithm":
+                #define population range
+                #tunePopulationSize([5, 10, 15, 20, 25])
+                self.tuneGenetic()
+            if self.algorithm == "differentialEvolution":
+                #define population range
+                #tunePopulationSize([5, 10, 15, 20, 25])
+                self.tuneDifferentialEvolution()
+            if self.algorithm == "particleSwarm":
+                #define population range
+                #tunePopulationSize([5, 10, 15, 20, 25])
+                self.tuneParticleSwarm()
+        
         
         nueronsPerLayer = self.data.shape[0]
         #set 5 possible nueron values with a max at the number of input values
@@ -136,6 +145,29 @@ class Learner:
         
         return Network.Network(0, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
     
+    def tunePopulationSize(self, populationRange):
+        foldIndex = 0
+        if self.classificationType == "classification":
+            outputSize = len(self.classes)
+        else:
+            outputSize = 1
+        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
+        #TUNE POPULATION SIZE
+        #set 5 possible nueron values with a max at the number of input values
+        accuracy = 0
+        for population in populationRange:
+            fold = self.folds[foldIndex % len(self.folds)]
+            self.populationSize = population
+            populationTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            self.network = populationTrainer.train()
+            output = self.test(self.testData)
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if(foldAccuracy > accuracy):
+                accuracy = foldAccuracy
+                bestPopulation = population
+            foldIndex += 1
+        self.populationSize = bestPopulation
+        
     def tuneBackprop(self):
         self.momentum = 0.9
         self.learningRate = 0.1
@@ -174,9 +206,47 @@ class Learner:
             foldIndex += 1
     
     def tuneGenetic(self):
+        foldIndex = 0
+        if self.classificationType == "classification":
+            outputSize = len(self.classes)
+        else:
+            outputSize = 1
+        self.network = Network.Network(self.hiddenLayers, self.neuronsPerLayer, self.features, outputSize, self.classificationType, self.batchSize, self.classes)
         #TUNE CROSSOVER RATE
+        #set 5 possible nueron values with a max at the number of input values
+        crossoverValues = np.linspace(0.6, 0.8, 5)
+        accuracy = 0
+        self.mutationRate = 0.1
+        #test accuracy of each value
+        for crossover in crossoverValues:
+            fold = self.folds[foldIndex % len(self.folds)]
+            self.crossoverRate = crossover
+            crossoverTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            self.network = crossoverTrainer.train()
+            output = self.test(self.testData)
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if(foldAccuracy > accuracy):
+                accuracy = foldAccuracy
+                bestCrossover = crossover
+            foldIndex += 1
+        self.crossoverRate = bestCrossover
         #TUNE MUTATION RATE
-        pass
+        #set 5 possible nueron values with a max at the number of input values
+        mutationValues = np.linspace(0.01, 0.3, 5)
+        accuracy = 0
+        for mutation in mutationValues:
+            fold = self.folds[foldIndex % len(self.folds)]
+            self.mutationRate = mutation
+            mutationTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            self.network = mutationTrainer.train()
+            output = self.test(self.testData)
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if(foldAccuracy > accuracy):
+                accuracy = foldAccuracy
+                bestMutation = mutation
+            foldIndex += 1
+        self.mutationRate = bestMutation
+            
     def tuneDifferentialEvolution(self):
         #TUNE SCALING FACTOR
         #TUNE BINOMIAL CROSSOVER PROBABILITY
