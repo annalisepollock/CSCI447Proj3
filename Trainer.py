@@ -274,7 +274,7 @@ class Trainer:
         # find initial global best solution
         candidateFitnessValues = []
         bestCandidateIndex = 0
-        for candidate in population:
+        for candidate in swarmPopulation:
             numBatches = 3
             # calculate fitness of offspring, determine if it is better than current candidate
             candidateFitness = self.helperCalculateFitness(candidate, numBatches, batches, batchIndex)
@@ -325,20 +325,23 @@ class Trainer:
                 # update personalbest for this particle
                 newNetwork = copy.deepcopy(population[particle])
                 newLayers = newNetwork.getLayers()
+                newWeights = []
                 for weights in range(len(newLayers)):
                     newLayers[weights].setWeights(swarmPopulation[particle][weights])
+                    newWeights.append(newLayers[weights].getWeights())
                 # compare fitnesses of both old and new network
-                newNetworkFitness = self.helperCalculateFitness(newNetwork, numBatches, batches, batchIndex)
-                oldNetworkFitness = self.helperCalculateFitness(population[particle], numBatches, batches, batchIndex)
+                newNetworkFitness = self.helperCalculateFitness(newWeights, numBatches, batches, batchIndex)
+                oldNetworkFitness = self.helperCalculateFitness(swarmPopulation[particle], numBatches, batches, batchIndex)
 
                 if oldNetworkFitness < newNetworkFitness:
                     population[particle] = newNetwork
+                    swarmPopulation[particle] = newLayers
 
                 # update new global solution
 
                 candidateFitnessValues = []
                 bestCandidateIndex = 0
-                for candidate in population:
+                for candidate in swarmPopulation:
                     numBatches = 3
                     # calculate fitness of each candidate, determine if it is better than current candidate
                     candidateFitness = self.helperCalculateFitness(candidate, numBatches, batches, batchIndex)
@@ -348,12 +351,12 @@ class Trainer:
                 print("Best Candidate")
                 #print(bestCandidateIndex)
                 #print(population[bestCandidateIndex].getLayers()[0].getWeights())
-                print(self.helperCalculateFitness(population[bestCandidateIndex], numBatches, batches, batchIndex))
+                print(self.helperCalculateFitness(swarmPopulation[bestCandidateIndex], numBatches, batches, batchIndex))
                 
         # RETURN BEST INDIVIDUAL CANDIDATE SOLUTION
         candidateFitnessValues = []
         bestCandidateIndex = 0
-        for candidate in population:
+        for candidate in swarmPopulation:
             numBatches = 3
             # calculate fitness of each candidate, determine if it is better than current candidate
             candidateFitness = self.helperCalculateFitness(candidate, numBatches, batches, batchIndex)
