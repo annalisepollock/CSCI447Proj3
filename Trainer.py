@@ -29,7 +29,7 @@ class Trainer:
                  ):
         # attributes used for convergence
         self.patience = 3
-        self.windowSize = 3
+        self.windowSize = 2
         self.tolerance = 1e-1
         self.learner = learner
         self.convergenceCount = 0
@@ -408,8 +408,7 @@ class Trainer:
         batches = self.network.createBatches(self.trainData)
         batchIndex = 0
 
-        # randomly generate N populations
-        print("DE POPULATION SIZE: " + str(self.populationSize))
+        # randomly generatePOPULATION SIZE N populations
         for i in range(self.populationSize):
             # create a deep copy of the current network (all new objects + references)
             candidateSolution = self.network.getWeights()

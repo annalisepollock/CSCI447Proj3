@@ -8,7 +8,7 @@ from ClassificationInfo import Accuracy
 
 class Learner: 
 
-    def __init__ (self, data, classificationType, classPlace, algorithm="geneticAlgorithm"):
+    def __init__ (self, data, classificationType, classPlace, algorithm="differentialEvolution"):
         # convergence testing
         self.patience = 2
         self.windowSize = 1
@@ -95,7 +95,7 @@ class Learner:
                 self.tuneGenetic()
             if self.algorithm == "differentialEvolution":
                 #define population range
-                populationRange = np.linspace(10, 30, 3).astype(int)
+                populationRange = np.linspace(10, 20, 3).astype(int)
                 self.tunePopulationSize(populationRange)
                 self.tuneDifferentialEvolution()
             if self.algorithm == "swarmOptimization":
@@ -272,7 +272,7 @@ class Learner:
         # TUNE BINOMIAL CROSSOVER PROBABILITY
         accuracy = 0  # reset accuracy measure
         bestProbability = 0
-        probabilityValues = np.linspace(0, 1, 6)
+        probabilityValues = np.linspace(0, 1, 6, endpoint=False)
         # test accuracy of each value
         for val in probabilityValues:
             fold = self.folds[foldIndex % len(self.folds)]
@@ -291,7 +291,7 @@ class Learner:
                 bestProbability = val
             foldIndex += 1
         self.binomialCrossoverProb = bestProbability
-        print("SCALING FACTOR: " + str(self.scalingFactor) + ", CROSSOVER PROBABILITY: " + str(
+        print("AFTER TUNING DIFFERENTIAL EVOLUTION, SCALING FACTOR: " + str(self.scalingFactor) + ", CROSSOVER PROBABILITY: " + str(
             self.binomialCrossoverProb))
 
     def tuneParticleSwarm(self):

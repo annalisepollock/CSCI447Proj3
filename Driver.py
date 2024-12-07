@@ -158,7 +158,7 @@ def main():
     for acc in datasetAccuracies:
          for i in range(3):
              datasetF1Scores[i].append(acc[i].getF1())
-             datasetZeroOneLoss[i].append(acc[i].getLoss())
+             datasetZeroOneLoss[i].append(np.mean(acc[i].getLoss()))
     
     # Set width for bars
     barWidth = 0.35
