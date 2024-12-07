@@ -95,7 +95,7 @@ class Learner:
                 self.tuneGenetic()
             if self.algorithm == "differentialEvolution":
                 #define population range
-                populationRange = np.linspace(5*self.hiddenLayers, 10*self.hiddenLayers, 5).astype(int)
+                populationRange = np.linspace(50, 100, 5).astype(int)
                 self.tunePopulationSize(populationRange)
                 self.tuneDifferentialEvolution()
             if self.algorithm == "particleSwarm":
