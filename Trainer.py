@@ -331,6 +331,8 @@ class Trainer:
                                 swarmVelocities[particle][weights][weightRow][weight] = previousVelocity
                             if math.isnan(swarmPopulation[particle][weights][weightRow][weight]):
                                 swarmPopulation[particle][weights][weightRow][weight] = previousWeight
+                    print("Postion Updated")
+                    print("Velocities Updated")
 
                 # update personalbest for this particle
                 newNetwork = copy.deepcopy(population[particle])
@@ -346,6 +348,7 @@ class Trainer:
                 if oldNetworkFitness < newNetworkFitness:
                     population[particle] = newNetwork
                     swarmPopulation[particle] = newLayers
+                    print("pbest Updated")
 
                 # update new global solution
 
@@ -358,6 +361,7 @@ class Trainer:
                     candidateFitnessValues.append(candidateFitness)
 
                 bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
+                print("gbest Updated")
                 print("Best Candidate")
                 #print(bestCandidateIndex)
                 #print(population[bestCandidateIndex].getLayers()[0].getWeights())
