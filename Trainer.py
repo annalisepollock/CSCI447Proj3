@@ -246,10 +246,6 @@ class Trainer:
         personalBest = []
         # personal best set of weights for each particle (size of population, contains networks)
         personalBestForParticle = []
-        # inertia, cognitive/social coefficients (will make hyperparameters later)
-        w = .5
-        c1 = 2
-        c2 = 2
         # if testing batch size will be different...
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
