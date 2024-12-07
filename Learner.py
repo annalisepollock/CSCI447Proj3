@@ -296,9 +296,6 @@ class Learner:
             print("Running cross calidation with stratification...")
         dataChunks = [None] * 10
         classes = np.unique(cleanDataset[classColumn])
-        #print("Classes: ")
-        #print(classes)
-        #print()
         dataByClass = dict()
 
         for uniqueVal in classes:
@@ -369,8 +366,6 @@ class Learner:
                 classifications.addTrueClass([testClasses[i], output[0][i]])
                 classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[0][i]))
         
-        print("ADDING LOSSES")
-        print(self.losses)
         classifications.setLoss(self.losses)
         return classifications
 

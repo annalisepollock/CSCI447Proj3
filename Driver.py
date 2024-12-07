@@ -11,9 +11,9 @@ import matplotlib.pyplot as plt
 
 def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
-
+    videoCode()
+    '''
     cleaner = Cleaner.Cleaner()
-    
     #IMPORT DATA SETS 
     print("BREAST CANCER")
     breastCancerData = fetch_ucirepo(id=15)
@@ -149,7 +149,7 @@ def main():
     # Adjust layout and display plot
     plt.tight_layout()
     plt.show()
-
+    '''
 
     # datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
     #                      abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]
@@ -227,17 +227,18 @@ def videoCode():
     cleaner = Cleaner.Cleaner()
 
     # Import the breast cancer dataset
+    print("BREAST CANCER")
     breastCancerData = fetch_ucirepo(id=15)
     breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
-    breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'geneticAlgorithm')
+    #breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'geneticAlgorithm')
 
     print("FOREST FIRES")
     forestFiresData = fetch_ucirepo(id=162)
     forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
     forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
-    forestLearner = Learner.Learner(forestClean, "regression", 'area', 'geneticAlgorithm')
-
+    #forestLearner = Learner.Learner(forestClean, "regression", 'area', 'geneticAlgorithm')
+    '''
     print("GENETIC ALGORITHM DEMO")
     breastCancerInfo = classificationAndAccuracyAllLayers(3, breastCancerLearner, breastCancerClean, "Breast Cancer", True)
     print("BREAST CANCER ACCURACY")
@@ -248,7 +249,7 @@ def videoCode():
     print("FOREST FIRE ACCURACY")
     for acc in forestInfo[2]:
         acc.print()
-
+    '''
     breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'differentialEvolution')
     forestLearner = Learner.Learner(forestClean, "regression", 'area', 'differentialEvolution')
 
@@ -262,9 +263,21 @@ def videoCode():
     print("FOREST FIRE ACCURACY")
     for acc in forestInfo[2]:
         acc.print()
+    '''
+    breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'particleSwarmOptimization')
+    forestLearner = Learner.Learner(forestClean, "regression", 'area', 'particleSwarmOptimization')
+
+    print("PARTICLE SWARM OPTIMIZATION DEMO")
+    breastCancerInfo = classificationAndAccuracyAllLayers(3, breastCancerLearner, breastCancerClean, "Breast Cancer", True)
+    print("BREAST CANCER ACCURACY")
+    for acc in breastCancerInfo[2]:
+        acc.print()
     
-    
-    # Run the
+    forestInfo = classificationAndAccuracyAllLayers(3, forestLearner, forestClean, "Forest Fires", True)
+    print("FOREST FIRE ACCURACY")
+    for acc in forestInfo[2]:
+        acc.print()
+    '''
 
 
 

@@ -72,10 +72,6 @@ class Trainer:
         else:
             raise ValueError("Algorithm not recognized")
         
-        if not isinstance(finishedNetwork, Network.Network):
-            raise TypeError("Learner not of type Network")
-        print("SETTING LOSSES")
-        print(self.losses)
         self.learner.setLosses(self.losses)
         return finishedNetwork
     
@@ -348,7 +344,8 @@ class Trainer:
                 if oldNetworkFitness < newNetworkFitness:
                     population[particle] = newNetwork
                     swarmPopulation[particle] = newLayers
-                    print("pbest Updated")
+                    if self.printSteps == True:
+                        print("Personal Best Updated")
 
                 # update new global solution
 
@@ -361,11 +358,14 @@ class Trainer:
                     candidateFitnessValues.append(candidateFitness)
 
                 bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
-                print("gbest Updated")
-                print("Best Candidate")
+                if self.printSteps == True:
+                    print("Global Best Fitness")
+                    print(min(candidateFitnessValues))
+                    print("Global Best Candidate")
+                    print(bestCandidateIndex)
+                    print(swarmPopulation[bestCandidateIndex])
                 #print(bestCandidateIndex)
                 #print(population[bestCandidateIndex].getLayers()[0].getWeights())
-                print(self.helperCalculateFitness(swarmPopulation[bestCandidateIndex], numBatches, batches, batchIndex))
                 
         # RETURN BEST INDIVIDUAL CANDIDATE SOLUTION
         candidateFitnessValues = []
@@ -471,7 +471,8 @@ class Trainer:
             candidateFitnessValues.append(candidateFitness)
 
         bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
-        return population[bestCandidateIndex]
+        self.network.setWeights(population[bestCandidateIndex])
+        return self.network
 
     def helperCalculateFitness(self, solution, numBatches, batches, batchIndex):
         # calculate loss numBatches times and return the average
@@ -569,20 +570,15 @@ class Trainer:
             candidateSolution = self.network.getWeights()
             self.network.reInitialize() # network with new initialized weights
             candidateSolutions.append(candidateSolution)
-            if not isinstance(self.network, Network.Network):
-                raise TypeError("Network not of type Network")
         
         #Evaluate fitness of each candidate solution
-        #To do: check convergence
         generations = 0
-        if not isinstance(self.network, Network.Network):
-                raise TypeError("Network not of type Network")
         while not self.checkConvergence():
             candidateFitnesses = []
             newPopulation = []
-            #print("GENERATION " + str(generations))
-            #print("Evaluating fitness of candidate solutions")
             totalLoss = 0
+            #calculate fitness of each candidate solution
+            #store in array with index to match candidate solutions
             for i in range(len(candidateSolutions)):
                 sol = candidateSolutions[i]
                 numBatches = 1
@@ -592,12 +588,11 @@ class Trainer:
                 totalLoss += candidateFitness
 
             avgLoss = totalLoss / len(candidateSolutions)
-            print("Average Loss: " + str(avgLoss))
             self.losses.append(avgLoss)
             
             #create new population using selection, mutation, crossover
             while len(newPopulation) < len(candidateSolutions):
-                #implement tounament selection - randomly select 10 % of the population and select the best two candidates
+                #implement tounament selection - randomly select 10 % of the population and select the best candidate
                 #print("\tSELECTING PARENTS")
                 tournamentSize = int(0.1 * len(candidateSolutions))
                 
@@ -612,7 +607,7 @@ class Trainer:
                     print("Parent 1")
                     print(parent1)
 
-            
+                #repeat selection with new tournament
                 tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
                 parentIndice = candidateFitnesses.index(min(tournament))
                 parent2 = candidateSolutions[parentIndice]
@@ -676,8 +671,8 @@ class Trainer:
             child2Layer = np.zeros(parent2Layer.shape)
             # Vectorized crossover
             child1Layer = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent1Layer, parent2Layer)
-            child1Layer = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent2Layer, parent1Layer)
-            if self.printSteps == True:
+            child2Layer = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent2Layer, parent1Layer)
+            if self.printSteps == True and i == 0:
                 print("CROSSOVER POINT")
                 print(crossoverPoint)
                 print("PARENT 1 LAYER")
@@ -692,10 +687,11 @@ class Trainer:
             # Vectorized mutation
             mutationMask = np.random.rand(*child1Layer.shape) < self.mutationRate
             mutationValues = np.random.uniform(-1, 1, child1Layer.shape)
-            child1Layer += mutationMask * mutationValues
-            child2Layer += mutationMask * mutationValues
+            child1Layer += (mutationMask * mutationValues)
+            child2Layer += (mutationMask * mutationValues)
 
-            if self.printSteps == True:
+            
+            if self.printSteps == True and i == 0:
                 print("MUTATION MASK")
                 print(mutationMask)
                 print("MUTATION VALUES")
@@ -705,6 +701,7 @@ class Trainer:
                 print("CHILD 2 LAYER AFTER MUTATION")
                 print(child2Layer)
                 print()
+            
 
             child1.append(child1Layer)
             child2.append(child2Layer)
