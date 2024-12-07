@@ -249,7 +249,7 @@ def videoCode():
     print("FOREST FIRE ACCURACY")
     for acc in forestInfo[2]:
         acc.print()
-    '''
+    
     breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'differentialEvolution')
     forestLearner = Learner.Learner(forestClean, "regression", 'area', 'differentialEvolution')
 
@@ -264,8 +264,8 @@ def videoCode():
     for acc in forestInfo[2]:
         acc.print()
     '''
-    breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'particleSwarmOptimization')
-    forestLearner = Learner.Learner(forestClean, "regression", 'area', 'particleSwarmOptimization')
+    breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'swarmOptimization')
+    forestLearner = Learner.Learner(forestClean, "regression", 'area', 'swarmOptimization')
 
     print("PARTICLE SWARM OPTIMIZATION DEMO")
     breastCancerInfo = classificationAndAccuracyAllLayers(3, breastCancerLearner, breastCancerClean, "Breast Cancer", True)
@@ -277,7 +277,6 @@ def videoCode():
     print("FOREST FIRE ACCURACY")
     for acc in forestInfo[2]:
         acc.print()
-    '''
 
 
 

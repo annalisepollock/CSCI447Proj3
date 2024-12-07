@@ -397,8 +397,7 @@ class Trainer:
         for i in range(self.populationSize):
             # create a deep copy of the current network (all new objects + references)
             candidateSolution = self.network.getWeights()
-            candidateSolution.reInitialize() # network with new initialized weights
-            candidateSolution.printNetwork()
+            self.network.reInitialize() # network with new initialized weights
             population.append(candidateSolution)
 
         # TO-DO: while not converged...
@@ -409,6 +408,7 @@ class Trainer:
             for i in range(len(population)):
                 print("MUTATION ON " + str(i+1) + " CANDIDATE SOLUTION")
                 sol = population[i]
+                self.network.setWeights(sol)
 
                 numBatches = 3
                 candidateFitness = self.helperCalculateFitness(sol, numBatches, batches, batchIndex)
@@ -417,8 +417,8 @@ class Trainer:
                 # extract weights for each layer from the Layer objects
                 solWeights = []
 
-                for j in range(len(sol.getLayers())-1):
-                    solutionLayer = sol.getLayers()[j].getWeights()
+                for j in range(len(self.network.getLayers())-1):
+                    solutionLayer = self.network.getLayers()[j].getWeights()
                     solWeights.append(solutionLayer)
 
                 # MUTATION
@@ -427,7 +427,7 @@ class Trainer:
                 x1, x2, x3 = random.sample([p for k, p in enumerate(population) if k != i], 3)
 
                 # perform calculation for all sets of weights (exclude output layer because it will not hold weights)
-                for j in range(len(sol.getLayers())-1):
+                for j in range(len(self.network.getLayers())-1):
                     layerDonor = x1.getLayers()[j].getWeights() + self.scalingFactor*(x2.getLayers()[j].getWeights() - x3.getLayers()[j].getWeights())
                     donor.append(layerDonor)
 
