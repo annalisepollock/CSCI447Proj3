@@ -158,7 +158,7 @@ def main():
     for acc in datasetAccuracies:
          for i in range(3):
              datasetF1Scores[i].append(acc[i].getF1())
-             datasetZeroOneLoss[i].append(np.mean(acc[i].getLoss()))
+             datasetZeroOneLoss[i].append(acc[i].getTotalAccuracy())
     
     # Set width for bars
     barWidth = 0.35
@@ -174,7 +174,7 @@ def main():
         barsF1 = ax[i].bar(x - barWidth / 2, datasetF1Scores[i], barWidth, label='F1 Score', color='darkcyan')
 
         # Plot 0-1 loss bars
-        barsLoss = ax[i].bar(x + barWidth / 2, datasetZeroOneLoss[i], barWidth, label='0-1 Loss', color='darkmagenta')
+        barsLoss = ax[i].bar(x + barWidth / 2, datasetZeroOneLoss[i], barWidth, label='Accuracy', color='darkmagenta')
 
         # Set labels, title, and legend for each subplot
         ax[i].set_xlabel('Dataset')
