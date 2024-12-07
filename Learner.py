@@ -90,7 +90,7 @@ class Learner:
         
         else:
             if self.algorithm == "geneticAlgorithm":
-                populationRange = np.linspace(20, 85, 6).astype(int)
+                populationRange = np.linspace(50, 200, 6).astype(int)
                 self.tunePopulationSize(populationRange)
                 self.tuneGenetic()
             if self.algorithm == "differentialEvolution":
