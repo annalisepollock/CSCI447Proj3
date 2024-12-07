@@ -68,11 +68,12 @@ class Trainer:
     def checkConvergence(self, printSteps = False):
         # customized hyperparameters for regression/classification
         if self.classificationType == 'regression':
-            self.patience = 2
+            #self.patience = 2
             targetRange = self.trainData[self.classPlace].max() - self.trainData[self.classPlace].min()
             self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
         else: # classification
-            self.windowSize = 3
+            #self.windowSize = 3
+            print()
 
         if len(self.losses) < self.windowSize*2:
             if printSteps == True:
