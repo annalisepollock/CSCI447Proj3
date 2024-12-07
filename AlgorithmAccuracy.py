@@ -42,6 +42,9 @@ class AlgorithmAccuracy:
 
     def getName(self):
         return self.name
+
+    def getLoss(self):  
+        return self.losses
     
     def print(self):
         print("DataSet: " + self.name)

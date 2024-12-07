@@ -150,44 +150,44 @@ def main():
     plt.show()
     
 
-    # datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
-    #                      abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]
-    # datasetF1Scores = [[] for _ in range(3)]
-    # datasetZeroOneLoss = [[] for _ in range(3)]
-    #
-    # for acc in datasetAccuracies:
-    #     for i in range(3):
-    #         datasetF1Scores[i].append(acc[i].getF1())
-    #         datasetZeroOneLoss[i].append(acc[i].getLoss())
-    #
-    # # Set width for bars
-    # barWidth = 0.35
-    #
-    # # Create an array for the x-axis
-    # x = np.arange(numDatasets)
-    #
-    # # Create the figure and axis
-    # fig, ax = plt.subplots(1, numLayers, figsize=(18, 5))
-    #
-    # for i in range(numLayers):
-    #     # Plot F1 score bars
-    #     barsF1 = ax[i].bar(x - barWidth / 2, datasetF1Scores[i], barWidth, label='F1 Score', color='darkcyan')
-    #
-    #     # Plot 0-1 loss bars
-    #     barsLoss = ax[i].bar(x + barWidth / 2, datasetZeroOneLoss[i], barWidth, label='0-1 Loss', color='darkmagenta')
-    #
-    #     # Set labels, title, and legend for each subplot
-    #     ax[i].set_xlabel('Dataset')
-    #     ax[i].set_title(f'Accuracy Stats by Dataset for {i} Hidden Layers')
-    #     ax[i].set_xticks(x)
-    #     ax[i].set_xticklabels(labels, rotation=45, ha='right')
-    #     if i == 0:  # Set the y-axis label only on the first subplot to avoid repetition
-    #         ax[i].set_ylabel('Scores')
-    #     ax[i].legend()
-    #
-    # # Adjust layout and show plot
-    # plt.tight_layout()
-    # plt.show()
+    datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
+                        abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]
+    datasetF1Scores = [[] for _ in range(3)]
+    datasetZeroOneLoss = [[] for _ in range(3)]
+    
+    for acc in datasetAccuracies:
+         for i in range(3):
+             datasetF1Scores[i].append(acc[i].getF1())
+             datasetZeroOneLoss[i].append(acc[i].getLoss())
+    
+    # Set width for bars
+    barWidth = 0.35
+
+    # Create an array for the x-axis
+    x = np.arange(numDatasets)
+
+    # Create the figure and axis
+    fig, ax = plt.subplots(1, numLayers, figsize=(18, 5))
+
+    for i in range(numLayers):
+        # Plot F1 score bars
+        barsF1 = ax[i].bar(x - barWidth / 2, datasetF1Scores[i], barWidth, label='F1 Score', color='darkcyan')
+
+        # Plot 0-1 loss bars
+        barsLoss = ax[i].bar(x + barWidth / 2, datasetZeroOneLoss[i], barWidth, label='0-1 Loss', color='darkmagenta')
+
+        # Set labels, title, and legend for each subplot
+        ax[i].set_xlabel('Dataset')
+        ax[i].set_title(f'Accuracy Stats by Dataset for {i} Hidden Layers')
+        ax[i].set_xticks(x)
+        ax[i].set_xticklabels(labels, rotation=45, ha='right')
+        if i == 0:  # Set the y-axis label only on the first subplot to avoid repetition
+            ax[i].set_ylabel('Scores')
+        ax[i].legend()
+
+    # Adjust layout and show plot
+    plt.tight_layout()
+    plt.show()
 
 
 def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name, printSteps=False):

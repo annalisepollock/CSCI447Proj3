@@ -587,7 +587,7 @@ class Trainer:
         
         #Evaluate fitness of each candidate solution
         generations = 0
-        while not self.checkConvergence():
+        while not self.checkConvergence() and batchIndex < len(batches):
             candidateFitnesses = []
             newPopulation = []
             totalLoss = 0
@@ -607,7 +607,7 @@ class Trainer:
             #create new population using selection, mutation, crossover
             while len(newPopulation) < len(candidateSolutions):
                 #implement tounament selection - randomly select 10 % of the population and select the best candidate
-                #print("\tSELECTING PARENTS")
+                print("\tSELECTING PARENTS")
                 tournamentSize = int(0.1 * len(candidateSolutions))
                 
                 tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
@@ -620,7 +620,7 @@ class Trainer:
                     print("SELECT LOWEST FITNESS VALUE")
                     print("Parent 1")
                     print(parent1)
-
+                
                 #repeat selection with new tournament
                 tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
                 parentIndice = candidateFitnesses.index(min(tournament))
@@ -635,7 +635,7 @@ class Trainer:
                 
 
                 #implement crossover and mutation - randomly select a crossover point 
-                #print("\tCROSSOVER AND MUTATION")
+                print("\tCROSSOVER AND MUTATION")
                 if random.random() < self.geneticCrossoverRate:
                     child1, child2 = self.crossover(parent1, parent2)
                     #add children to new population
