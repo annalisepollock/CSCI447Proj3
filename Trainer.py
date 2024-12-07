@@ -297,36 +297,51 @@ class Trainer:
                 # for each set of weights in a layer
                 for weights in range(len(swarmPopulation[particle])):
                     # for each row of weights in weight array
-                    for weightRow in range(len(swarmPopulation[particle][weights])):
-                        # for each single weight individually
-                        for weight in range(len(swarmPopulation[particle][weights][weightRow])):
-                            # compute each new velocity individually
-                            # generate 2 random values for this function
-                            r1 = random.random()
-                            r2 = random.random()
+                    
+                    # get dimensions for random arrays, it doesn't like taking in just the tuple .shape returns
+                    d1 = swarmPopulation[particle][weights].shape[0]
+                    d2 = swarmPopulation[particle][weights].shape[1]
 
-                            # values for NaN/overflow prevention
-                            previousWeight = swarmPopulation[particle][weights][weightRow][weight]
-                            previousVelocity = swarmVelocities[particle][weights][weightRow][weight]
+                    r1 = np.random.rand(d1,d2)
+                    r2 = np.random.rand(d1,d2)
 
-                            np.seterr(over='raise')
-                            try:
-                
-                                # compute velocity of dimension of particle
-                                swarmVelocities[particle][weights][weightRow][weight] = self.inertia*swarmVelocities[particle][weights][weightRow][weight] + self.cognitiveComponent*r1*(personalBest[particle][weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight]) + self.socialComponent*r2*(globalSolutionWeights[weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight])
-                                # compute position of specific dimension of particle 
-                                swarmPopulation[particle][weights][weightRow][weight] = swarmPopulation[particle][weights][weightRow][weight] + swarmVelocities[particle][weights][weightRow][weight]
-                                if self.printSteps == True:
-                                    print(f"Particle {particle}, Weight ({weights}, {weightRow}, {weight}):")
-                                    print(f"  Velocity updated to: {swarmVelocities[particle][weights][weightRow][weight]}")
-                                    print(f"  Position updated to: {swarmPopulation[particle][weights][weightRow][weight]}")
-                            except FloatingPointError:
-                                return population[bestCandidateIndex]
-                            # roll back to previous values if new ones are NaN
-                            if math.isnan(swarmVelocities[particle][weights][weightRow][weight]):
-                                swarmVelocities[particle][weights][weightRow][weight] = previousVelocity
-                            if math.isnan(swarmPopulation[particle][weights][weightRow][weight]):
-                                swarmPopulation[particle][weights][weightRow][weight] = previousWeight
+                    np.seterr(over='raise')
+                    try:
+                        # compute velocity of dimension of particle
+                        swarmVelocities[particle][weights] = self.inertia*swarmVelocities[particle][weights] + self.cognitiveComponent*r1*(personalBest[particle][weights] - swarmVelocities[particle][weights]) + self.socialComponent*r2*(globalSolutionWeights[weights] - swarmVelocities[particle][weights])
+                        # compute position of specific dimension of particle 
+                        swarmPopulation[particle][weights] = swarmPopulation[particle][weights] + swarmVelocities[particle][weights]
+                    except FloatingPointError:
+                        return population[bestCandidateIndex]
+
+                    # values for NaN/overflow prevention
+                    # previousWeight = swarmPopulation[particle][weights]
+                    # previousVelocity = swarmVelocities[particle][weights]
+                    # for weightRow in range(len(swarmPopulation[particle][weights])):
+                    #     # for each single weight individually
+                    #     for weight in range(len(swarmPopulation[particle][weights][weightRow])):
+                    #         # compute each new velocity individually
+                    #         # generate 2 random values for this function
+                    #         r1 = random.random()
+                    #         r2 = random.random()
+
+                    #         # values for NaN/overflow prevention
+                    #         previousWeight = swarmPopulation[particle][weights][weightRow][weight]
+                    #         previousVelocity = swarmVelocities[particle][weights][weightRow][weight]
+
+                    #         np.seterr(over='raise')
+                    #         try:
+                    #             # compute velocity of dimension of particle
+                    #             swarmVelocities[particle][weights][weightRow][weight] = self.inertia*swarmVelocities[particle][weights][weightRow][weight] + self.cognitiveComponent*r1*(personalBest[particle][weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight]) + self.socialComponent*r2*(globalSolutionWeights[weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight])
+                    #             # compute position of specific dimension of particle 
+                    #             swarmPopulation[particle][weights][weightRow][weight] = swarmPopulation[particle][weights][weightRow][weight] + swarmVelocities[particle][weights][weightRow][weight]
+                    #         except FloatingPointError:
+                    #             return population[bestCandidateIndex]
+                    #         # roll back to previous values if new ones are NaN
+                    #         if math.isnan(swarmVelocities[particle][weights][weightRow][weight]):
+                    #             swarmVelocities[particle][weights][weightRow][weight] = previousVelocity
+                    #         if math.isnan(swarmPopulation[particle][weights][weightRow][weight]):
+                    #             swarmPopulation[particle][weights][weightRow][weight] = previousWeight
                     print("Postion Updated")
                     print("Velocities Updated")
 
