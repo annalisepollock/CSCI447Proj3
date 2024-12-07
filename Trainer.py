@@ -244,8 +244,6 @@ class Trainer:
         swarmVelocities = []
         # personal best weight for each individual weight
         personalBest = []
-        # personal best set of weights for each particle (size of population, contains networks)
-        personalBestForParticle = []
         # if testing batch size will be different...
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
@@ -269,7 +267,6 @@ class Trainer:
             swarmVelocities.append(particleVelocities)
             population.append(candidateSolution)
             personalBest.append(particle)
-            personalBestForParticle.append(candidateSolution)
 
         # find initial global best solution
         candidateFitnessValues = []
