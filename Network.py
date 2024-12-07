@@ -113,3 +113,13 @@ class Network:
         for layer in self.layers:
             features = layer.forwardPass(features, printSteps)
         return features
+    
+    def getWeights (self):
+        weights = []
+        for layer in self.layers:
+            weights.append(layer.getWeights())
+        return weights
+    
+    def setWeights(self, weights):
+        for i in range(len(self.layers)):
+            self.layers[i].setWeights(weights[i])

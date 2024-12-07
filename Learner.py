@@ -90,7 +90,7 @@ class Learner:
         
         else:
             if self.algorithm == "geneticAlgorithm":
-                populationRange = np.linspace(20, 100, 6).astype(int)
+                populationRange = np.linspace(20, 85, 6).astype(int)
                 self.tunePopulationSize(populationRange)
                 self.tuneGenetic()
             if self.algorithm == "differentialEvolution":
@@ -152,6 +152,7 @@ class Learner:
         #TUNE POPULATION SIZE
         #set 5 possible nueron values with a max at the number of input values
         accuracy = 0
+        bestPopulation = 15
         for population in populationRange:
             fold = self.folds[foldIndex % len(self.folds)]
             self.populationSize = population
@@ -206,7 +207,7 @@ class Learner:
         #TUNE CROSSOVER RATE
         #set 5 possible nueron values with a max at the number of input values
         foldIndex = 0
-        crossoverValues = np.linspace(0.6, 0.8, 5)
+        crossoverValues = [0.6, 0.7, 0.8, 0.9, 0.99]
         accuracy = 0
         self.mutationRate = 0.1
         #test accuracy of each value
@@ -224,7 +225,7 @@ class Learner:
         self.crossoverRate = bestCrossover
         #TUNE MUTATION RATE
         #set 5 possible nueron values with a max at the number of input values
-        mutationValues = np.linspace(0.01, 0.3, 5)
+        mutationValues = [0.01, 0.1, 0.2, 0.25, 0.3]
         accuracy = 0
         for mutation in mutationValues:
             fold = self.folds[foldIndex % len(self.folds)]

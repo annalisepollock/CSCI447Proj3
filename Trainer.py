@@ -72,7 +72,7 @@ class Trainer:
             targetRange = self.trainData[self.classPlace].max() - self.trainData[self.classPlace].min()
             self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
         else: # classification
-            self.windowSize = 3
+            self.windowSize = 1
 
         if len(self.losses) < self.windowSize*2:
             if printSteps == True:
@@ -439,19 +439,20 @@ class Trainer:
     def helperCalculateFitness(self, solution, numBatches, batches, batchIndex):
         # calculate loss numBatches times and return the average
         solLoss = []
+        self.network.setWeights(solution)
 
         # calculate fitness of current candidate; pass a given # of batches in and calculate avg loss
         for k in range(numBatches):
             # get batch of data
             batch = batches[batchIndex % len(batches)]
-            if solution.getBatchSize() != batch.shape[0]:
-                solution.setBatchSize(batch.shape[0])
+            if self.network.getBatchSize() != batch.shape[0]:
+                self.network.setBatchSize(batch.shape[0])
 
             batchClasses = batch[self.classPlace].to_numpy()
             batchData = batch.drop(columns=[self.classPlace])
 
             # test weights and biases on current
-            predictions = solution.forwardPass(batchData)
+            predictions = self.network.forwardPass(batchData)
             targetValues = batchClasses
 
             # prepare output for loss calculation
@@ -527,8 +528,8 @@ class Trainer:
         # randomly generate N populations
         for i in range(self.populationSize):
             # create a deep copy of the current network (all new objects + references)
-            candidateSolution = copy.deepcopy(self.network)
-            candidateSolution.reInitialize() # network with new initialized weights
+            candidateSolution = self.network.getWeights()
+            self.network.reInitialize() # network with new initialized weights
             candidateSolutions.append(candidateSolution)
         
         #Evaluate fitness of each candidate solution
@@ -540,7 +541,7 @@ class Trainer:
             print("Evaluating fitness of candidate solutions")
             for i in range(len(candidateSolutions)):
                 sol = candidateSolutions[i]
-                numBatches = 3
+                numBatches = 1
                 candidateFitness = self.helperCalculateFitness(sol, numBatches, batches, batchIndex)
                 batchIndex += numBatches
                 candidateFitnesses.append(candidateFitness)
@@ -548,9 +549,9 @@ class Trainer:
             
             #create new population using selection, mutation, crossover
             while len(newPopulation) < len(candidateSolutions):
-                #implement tounament selection - randomly select 20 % of the population and select the best two candidates
+                #implement tounament selection - randomly select 10 % of the population and select the best two candidates
                 print("SELECTING PARENTS")
-                tournamentSize = int(0.2 * len(candidateSolutions))
+                tournamentSize = int(0.1 * len(candidateSolutions))
 
                 tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
                 parentIndice = candidateFitnesses.index(min(tournament))
