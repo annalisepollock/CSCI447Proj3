@@ -11,8 +11,7 @@ import matplotlib.pyplot as plt
 
 def main():
     warnings.filterwarnings("ignore", category=pd.errors.PerformanceWarning)
-    videoCode()
-    '''
+    
     cleaner = Cleaner.Cleaner()
     #IMPORT DATA SETS 
     print("BREAST CANCER")
@@ -149,7 +148,7 @@ def main():
     # Adjust layout and display plot
     plt.tight_layout()
     plt.show()
-    '''
+    
 
     # datasetAccuracies = [breastCancerTotalAccuracyStats, glassTotalAccuracyStats, soybeanTotalAccuracyStats,
     #                      abaloneTotalAccuracyStats, computerTotalAccuracyStats, forestTotalAccuracyStats]
