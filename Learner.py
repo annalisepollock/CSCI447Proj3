@@ -32,7 +32,7 @@ class Learner:
         self.momentum = -1 #backpropagation
         self.crossoverRate = -1 #genetic algorithm
         self.mutationRate = -1 #genetic algorithm
-        self.populationSize = 15 #GA DE PSO
+        self.populationSize = 5 #GA DE PSO
         self.scalingFactor = -1 #DE
         self.binomialCrossoverProb = -1 #DE
         self.inertia = -1 #PSO
@@ -95,7 +95,8 @@ class Learner:
                 self.tuneGenetic()
             if self.algorithm == "differentialEvolution":
                 #define population range
-                #tunePopulationSize([5, 10, 15, 20, 25])
+                populationRange = np.linspace(5*self.hiddenLayers, 10*self.hiddenLayers, 5).astype(int)
+                self.tunePopulationSize(populationRange)
                 self.tuneDifferentialEvolution()
             if self.algorithm == "particleSwarm":
                 #define population range
@@ -152,6 +153,8 @@ class Learner:
         #TUNE POPULATION SIZE
         #set 5 possible nueron values with a max at the number of input values
         accuracy = 0
+        self.mutation = 0.1
+        self.crossoverRate = 0.9
         bestPopulation = 15
         for population in populationRange:
             fold = self.folds[foldIndex % len(self.folds)]
@@ -241,9 +244,43 @@ class Learner:
         self.mutationRate = bestMutation
             
     def tuneDifferentialEvolution(self):
+        foldIndex = 0
+        accuracy = 0
+
         #TUNE SCALING FACTOR
+        bestScalingFactor = 0
+        scalingFactorValues = np.linspace(0, 2, 10)
+        #test accuracy of each value
+        for val in scalingFactorValues:
+            fold = self.folds[foldIndex % len(self.folds)]
+            self.scalingFactor = val
+            scalingFactorTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            self.network = scalingFactorTrainer.train()
+            output = self.test(self.testData)
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if(foldAccuracy > accuracy):
+                accuracy = foldAccuracy
+                bestScalingFactor = val
+            foldIndex += 1
+        self.scalingFactor = bestScalingFactor
         #TUNE BINOMIAL CROSSOVER PROBABILITY
-        pass
+        accuracy = 0 # reset accuracy measure
+        bestProbability = 0
+        probabilityValues = np.linspace(0, 1, 10)
+        # test accuracy of each value
+        for val in probabilityValues:
+            fold = self.folds[foldIndex % len(self.folds)]
+            self.binomialCrossoverProb = val
+            scalingFactorTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            self.network = scalingFactorTrainer.train()
+            output = self.test(self.testData)
+            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if(foldAccuracy > accuracy):
+                accuracy = foldAccuracy
+                bestProbability = val
+            foldIndex += 1
+        self.binomialCrossoverProb = bestProbability
+
     def tuneParticleSwarm(self):
         #TUNE INERTIA
         #TUNE COGNITIVE UPDATE RATE

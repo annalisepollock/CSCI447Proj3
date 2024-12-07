@@ -63,12 +63,14 @@ class Trainer:
             raise ValueError("Algorithm not recognized")
         
         self.learner.setLosses(self.losses)
+        if not isinstance(finishedNetwork, Network.Network):
+            raise TypeError("Network not of type Network")
         return finishedNetwork
     
     def checkConvergence(self, printSteps = False):
         # customized hyperparameters for regression/classification
         if self.classificationType == 'regression':
-            self.patience = 2
+            #self.patience = 2
             targetRange = self.trainData[self.classPlace].max() - self.trainData[self.classPlace].min()
             self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
         else: # classification
@@ -359,7 +361,7 @@ class Trainer:
         # randomly generate N populations
         for i in range(self.populationSize):
             # create a deep copy of the current network (all new objects + references)
-            candidateSolution = copy.deepcopy(self.network)
+            candidateSolution = self.network.getWeights()
             candidateSolution.reInitialize() # network with new initialized weights
             candidateSolution.printNetwork()
             population.append(candidateSolution)
@@ -534,10 +536,11 @@ class Trainer:
         
         #Evaluate fitness of each candidate solution
         #To do: check convergence
+        generations = 0
         while not self.checkConvergence() and batchIndex < len(batches):
             candidateFitnesses = []
             newPopulation = []
-            print("GENERATION " + str(i))
+            print("GENERATION " + str(generations))
             print("Evaluating fitness of candidate solutions")
             for i in range(len(candidateSolutions)):
                 sol = candidateSolutions[i]
@@ -574,6 +577,7 @@ class Trainer:
                     newPopulation.append(parent2)
             
             candidateSolutions = newPopulation
+            generations += 1
         
         # RETURN BEST INDIVIDUAL CANDIDATE SOLUTION
         candidateFitnessValues = []
@@ -585,35 +589,38 @@ class Trainer:
             candidateFitnessValues.append(candidateFitness)
 
         bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
-        return candidateSolutions[bestCandidateIndex]
+        return self.network.setWeight(candidateSolutions[bestCandidateIndex])
                 
     def crossover(self, parent1, parent2):
         #create networks to hold children
-        child1 = copy.deepcopy(self.network)
-        child2 = copy.deepcopy(self.network)
+        child1 = np.zeros(self.network.getWeights().shape)
+        child2 = np.zeros(self.network.getWeights().shape)
+
+        parent1Network = copy.deepcopy(self.network)
+        parent1Network.setWeights(parent1)
+        parent2Network = self.network.setWeights(parent2)
+
+        print("PARENT 1")
+        print(type(parent1Network))
+        print("PARENT 2")
+        print(type(parent2Network))
 
         #loop through each layer in the parent networks
-        for i in range(len(parent1.getLayers())):
-            parent1Layer = parent1.getLayers()[i].getWeights()
-            parent2Layer = parent2.getLayers()[i].getWeights()
+        for i in range(len(parent1Network.getLayers())):
+            parent1Layer = parent1Network.getLayers()[i].getWeights()
+            parent2Layer = parent2Network.getLayers()[i].getWeights()
 
             crossoverPoint = random.randint(0, parent1Layer.shape[1] -1)
 
-            child1LayerWeights = np.zeros(parent1Layer.shape)
-            child2LayerWeights = np.zeros(parent2Layer.shape)
-
             # Vectorized crossover
-            child1LayerWeights = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent1Layer, parent2Layer)
-            child2LayerWeights = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent2Layer, parent1Layer)
+            child1[i] = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent1Layer, parent2Layer)
+            child2[i] = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent2Layer, parent1Layer)
 
             # Vectorized mutation
-            mutationMask = np.random.rand(*child1LayerWeights.shape) < self.mutationRate
-            mutationValues = np.random.uniform(-1, 1, child1LayerWeights.shape)
-            child1LayerWeights += mutationMask * mutationValues
-            child2LayerWeights += mutationMask * mutationValues
-
-            child1.getLayers()[i].setWeights(child1LayerWeights)
-            child2.getLayers()[i].setWeights(child2LayerWeights)
+            mutationMask = np.random.rand(*child1[i].shape) < self.mutationRate
+            mutationValues = np.random.uniform(-1, 1, child1[i].shape)
+            child1[i] += mutationMask * mutationValues
+            child2[i] += mutationMask * mutationValues
                 
         
         return child1, child2
