@@ -4,6 +4,7 @@ import random
 import sys
 import numpy as np
 import Network
+import math
 
 class Trainer:
     def __init__(self, 
@@ -49,6 +50,11 @@ class Trainer:
         self.classPlace = classPlace
         self.classes = self.trainData[classPlace].unique()
         self.losses = []
+
+        # initialize values for particle swarm optimization algorithm
+        self.inertia = inertia
+        self.cognitiveComponent = cognitiveComponent
+        self.socialComponent = socialComponent
     
     def train(self):
         if self.algorithm == "backpropagation":
@@ -240,10 +246,6 @@ class Trainer:
         personalBest = []
         # personal best set of weights for each particle (size of population, contains networks)
         personalBestForParticle = []
-        # inertia, cognitive/social coefficients (will make hyperparameters later)
-        w = .5
-        c1 = 2
-        c2 = 2
         # if testing batch size will be different...
         if self.network.getBatchSize() != self.batchSize:
             self.network.setBatchSize(self.batchSize)
@@ -286,13 +288,9 @@ class Trainer:
             globalSolutionWeightLayer = layer.getWeights()
             globalSolutionWeights.append(globalSolutionWeightLayer)
 
-        print(swarmPopulation[0][0][0][0])
-        print(personalBest[0][0][0][0])
-        print(swarmVelocities[0][0][0][0])
-        print(globalSolutionWeights[0][0][0])
-
         # while it hasn't converged
         while not self.checkConvergence():
+            print("Not Converged")
             # for each particle
             for particle in range(len(swarmPopulation)):
                 # for each set of weights in a layer
@@ -305,9 +303,25 @@ class Trainer:
                             # generate 2 random values for this function
                             r1 = random.random()
                             r2 = random.random()
-                            swarmVelocities[particle][weights][weightRow][weight] = w*swarmVelocities[particle][weights][weightRow][weight] + c1*r1*(personalBest[particle][weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight]) + c2*r2*(globalSolutionWeights[weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight])
-                            # compute position of specific dimension of particle 
-                            swarmPopulation[particle][weights][weightRow][weight] = swarmPopulation[particle][weights][weightRow][weight] + swarmVelocities[particle][weights][weightRow][weight]
+
+                            # values for NaN/overflow prevention
+                            previousWeight = swarmPopulation[particle][weights][weightRow][weight]
+                            previousVelocity = swarmVelocities[particle][weights][weightRow][weight]
+
+                            np.seterr(over='raise')
+                            try:
+                                # compute velocity of dimension of particle
+                                swarmVelocities[particle][weights][weightRow][weight] = self.inertia*swarmVelocities[particle][weights][weightRow][weight] + self.cognitiveComponent*r1*(personalBest[particle][weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight]) + self.socialComponent*r2*(globalSolutionWeights[weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight])
+                                # compute position of specific dimension of particle 
+                                swarmPopulation[particle][weights][weightRow][weight] = swarmPopulation[particle][weights][weightRow][weight] + swarmVelocities[particle][weights][weightRow][weight]
+                            except FloatingPointError:
+                                return population[bestCandidateIndex]
+                            # roll back to previous values if new ones are NaN
+                            if math.isnan(swarmVelocities[particle][weights][weightRow][weight]):
+                                swarmVelocities[particle][weights][weightRow][weight] = previousVelocity
+                            if math.isnan(swarmPopulation[particle][weights][weightRow][weight]):
+                                swarmPopulation[particle][weights][weightRow][weight] = previousWeight
+
                 # update personalbest for this particle
                 newNetwork = copy.deepcopy(population[particle])
                 newLayers = newNetwork.getLayers()
@@ -331,6 +345,10 @@ class Trainer:
                     candidateFitnessValues.append(candidateFitness)
 
                 bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
+                print("Best Candidate")
+                #print(bestCandidateIndex)
+                #print(population[bestCandidateIndex].getLayers()[0].getWeights())
+                print(self.helperCalculateFitness(population[bestCandidateIndex], numBatches, batches, batchIndex))
                 
         # RETURN BEST INDIVIDUAL CANDIDATE SOLUTION
         candidateFitnessValues = []

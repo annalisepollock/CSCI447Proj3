@@ -8,7 +8,7 @@ from ClassificationInfo import Accuracy
 
 class Learner: 
 
-    def __init__ (self, data, classificationType, classPlace, algorithm="geneticAlgorithm"):
+    def __init__ (self, data, classificationType, classPlace, algorithm="swarmOptimization"):
         # convergence testing
         self.patience = 2
         self.windowSize = 1
@@ -35,9 +35,9 @@ class Learner:
         self.populationSize = 5 #GA DE PSO
         self.scalingFactor = -1 #DE
         self.binomialCrossoverProb = -1 #DE
-        self.inertia = -1 #PSO
-        self.cognitiveUpdateRate = -1 #PSO
-        self.socialUpdateRate = -1 #PSO
+        self.inertia = .7 #PSO
+        self.cognitiveUpdateRate = 2 #PSO
+        self.socialUpdateRate = 2 #PSO
         self.hiddenLayers = 1
         self.neuronsPerLayer = self.data.shape[0]
         self.batchSize = 10
@@ -98,9 +98,9 @@ class Learner:
                 populationRange = np.linspace(50, 100, 6).astype(int)
                 self.tunePopulationSize(populationRange)
                 self.tuneDifferentialEvolution()
-            if self.algorithm == "particleSwarm":
+            if self.algorithm == "swarmOptimization":
                 #define population range
-                #tunePopulationSize([5, 10, 15, 20, 25])
+                self.tunePopulationSize([5, 10, 15, 20, 25])
                 self.tuneParticleSwarm()
         
         
