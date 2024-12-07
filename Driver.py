@@ -19,8 +19,7 @@ def main():
     breastCancerData = fetch_ucirepo(id=15)
     breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
-    breastCancerTest = breastCancerClean.sample(frac=0.5)
-    breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
+    breastCancerLearner = Learner.Learner(breastCancerClean, "classification", "Class")
 
     breastCancerInfo = classificationAndAccuracyAllLayers(3, breastCancerLearner, breastCancerClean, "Breast Cancer")
 
@@ -192,7 +191,7 @@ def main():
     # plt.show()
 
 
-def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name):
+def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name, printSteps=False):
     layerFoldClassifications = []  # 3 instances of arrays w/ 10 classification infos
 
     totalClassifications = []  # store classInfo for 0, 1, 2 layers
@@ -201,7 +200,7 @@ def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name):
     # print("CLEANED DATASET: ")
     for numHiddenLayers in range(layersRange):
         learner.setHiddenLayers(numHiddenLayers)
-        classification = learner.run()  # returns array of 10 ClassificationInfos (1 per fold)
+        classification = learner.run((numHiddenLayers==2))  # returns array of 10 ClassificationInfos (1 per fold)
         layerFoldClassifications.append(classification)
 
         totalClassification = ClassificationInfo.ClassificationInfo()
@@ -222,6 +221,50 @@ def classificationAndAccuracyAllLayers(layersRange, learner, cleanData, name):
         totalAccuracies.append(totalAccuracyStats)
 
     return layerFoldClassifications, totalClassifications, totalAccuracies
+
+def videoCode():
+    # Create a cleaner object
+    cleaner = Cleaner.Cleaner()
+
+    # Import the breast cancer dataset
+    breastCancerData = fetch_ucirepo(id=15)
+    breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
+    breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
+    breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'geneticAlgorithm')
+
+    print("FOREST FIRES")
+    forestFiresData = fetch_ucirepo(id=162)
+    forestFiresDataFrame = pd.DataFrame(forestFiresData.data.original)
+    forestClean = cleaner.clean(forestFiresDataFrame, [], 'area')
+    forestLearner = Learner.Learner(forestClean, "regression", 'area', 'geneticAlgorithm')
+
+    print("GENETIC ALGORITHM DEMO")
+    breastCancerInfo = classificationAndAccuracyAllLayers(3, breastCancerLearner, breastCancerClean, "Breast Cancer", True)
+    print("BREAST CANCER ACCURACY")
+    for acc in breastCancerInfo[2]:
+        acc.print()
+    
+    forestInfo = classificationAndAccuracyAllLayers(3, forestLearner, forestClean, "Forest Fires", True)
+    print("FOREST FIRE ACCURACY")
+    for acc in forestInfo[2]:
+        acc.print()
+
+    breastCancerLearner = Learner.Learner(breastCancerClean, 'classification', 'Class', 'differentialEvolution')
+    forestLearner = Learner.Learner(forestClean, "regression", 'area', 'differentialEvolution')
+
+    print("DIFFERENTIAL EVOLUTION DEMO")
+    breastCancerInfo = classificationAndAccuracyAllLayers(3, breastCancerLearner, breastCancerClean, "Breast Cancer", True)
+    print("BREAST CANCER ACCURACY")
+    for acc in breastCancerInfo[2]:
+        acc.print()
+    
+    forestInfo = classificationAndAccuracyAllLayers(3, forestLearner, forestClean, "Forest Fires", True)
+    print("FOREST FIRE ACCURACY")
+    for acc in forestInfo[2]:
+        acc.print()
+    
+    
+    # Run the
 
 
 

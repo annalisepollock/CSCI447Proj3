@@ -40,6 +40,7 @@ class ClassificationInfo:
             print("Accuracy: 0")
         else:
             print("Accuracy: " + str((self.TP + self.TN)/(self.TP + self.TN + self.FP + self.FN)))
+        print("Loss: " + str(self.loss[-5:]))
         print()
 
     #APPENDS TO THE CURRENT VALUES

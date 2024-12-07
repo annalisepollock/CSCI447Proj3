@@ -8,7 +8,7 @@ from ClassificationInfo import Accuracy
 
 class Learner: 
 
-    def __init__ (self, data, classificationType, classPlace, algorithm="swarmOptimization"):
+    def __init__ (self, data, classificationType, classPlace, algorithm="geneticAlgorithm"):
         # convergence testing
         self.patience = 2
         self.windowSize = 1
@@ -364,12 +364,14 @@ class Learner:
             for i in range(len(output)):
                 classifications.addTrueClass([testClasses[i], output[i]])
                 classifications.addConfusion(self.classificationAccuracy(testClasses[i], output[i]))
-                classifications.setLoss(self.losses.copy())
         elif(self.classificationType == "regression"):
             for i in range(len(output[0])):
                 classifications.addTrueClass([testClasses[i], output[0][i]])
                 classifications.addConfusion(self.regressionAccuracy(testClasses[i], output[0][i]))
-                classifications.setLoss(self.losses.copy())
+        
+        print("ADDING LOSSES")
+        print(self.losses)
+        classifications.setLoss(self.losses)
         return classifications
 
 
@@ -415,11 +417,14 @@ class Learner:
             self.resetNetwork()
             trainData = self.data.drop(fold.index)
             testData = fold
-            trainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, trainData, self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            trainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, trainData, self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate, (printSteps and foldCount == 0))
             self.network = trainer.train()
             classification = self.test(testData)
             classificationInfos.append(classification)
+            if printSteps == True and foldCount == 0:
+                classification.printAccuracy()
             foldCount+=1
+
             
 
         return classificationInfos

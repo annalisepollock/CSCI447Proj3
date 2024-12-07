@@ -25,10 +25,11 @@ class Trainer:
                  inertia,
                  cognitiveComponent,
                  socialComponent,
+                 printSteps=False
                  ):
         # attributes used for convergence
-        self.patience = 1
-        self.windowSize = 1
+        self.patience = 3
+        self.windowSize = 3
         self.tolerance = 1e-1
         self.learner = learner
         self.convergenceCount = 0
@@ -55,6 +56,9 @@ class Trainer:
         self.inertia = inertia
         self.cognitiveComponent = cognitiveComponent
         self.socialComponent = socialComponent
+
+        # print for video
+        self.printSteps = printSteps
     
     def train(self):
         if self.algorithm == "backpropagation":
@@ -70,13 +74,15 @@ class Trainer:
         
         if not isinstance(finishedNetwork, Network.Network):
             raise TypeError("Learner not of type Network")
+        print("SETTING LOSSES")
+        print(self.losses)
         self.learner.setLosses(self.losses)
         return finishedNetwork
     
     def checkConvergence(self, printSteps = False):
         # customized hyperparameters for regression/classification
         if self.classificationType == 'regression':
-            #self.patience = 2
+            self.patience = 2
             targetRange = self.trainData[self.classPlace].max() - self.trainData[self.classPlace].min()
             self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
         else: # classification
@@ -281,6 +287,8 @@ class Trainer:
         
         # get weights from global solution
         globalSolutionWeights = []
+        if self.printSteps == True:
+            print(f"Initial global best fitness: {min(candidateFitnessValues)}")
         for layer in population[bestCandidateIndex].getLayers():
             globalSolutionWeightLayer = layer.getWeights()
             globalSolutionWeights.append(globalSolutionWeightLayer)
@@ -307,10 +315,15 @@ class Trainer:
 
                             np.seterr(over='raise')
                             try:
+                
                                 # compute velocity of dimension of particle
                                 swarmVelocities[particle][weights][weightRow][weight] = self.inertia*swarmVelocities[particle][weights][weightRow][weight] + self.cognitiveComponent*r1*(personalBest[particle][weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight]) + self.socialComponent*r2*(globalSolutionWeights[weights][weightRow][weight] - swarmVelocities[particle][weights][weightRow][weight])
                                 # compute position of specific dimension of particle 
                                 swarmPopulation[particle][weights][weightRow][weight] = swarmPopulation[particle][weights][weightRow][weight] + swarmVelocities[particle][weights][weightRow][weight]
+                                if self.printSteps == True:
+                                    print(f"Particle {particle}, Weight ({weights}, {weightRow}, {weight}):")
+                                    print(f"  Velocity updated to: {swarmVelocities[particle][weights][weightRow][weight]}")
+                                    print(f"  Position updated to: {swarmPopulation[particle][weights][weightRow][weight]}")
                             except FloatingPointError:
                                 return population[bestCandidateIndex]
                             # roll back to previous values if new ones are NaN
@@ -526,7 +539,7 @@ class Trainer:
 
                 print("error for regression: " + str(error))
             loss = np.mean((predictions[0] - targets) ** 2)
-            print("loss for regression: " + str(loss))
+            #print("\tloss for regression: " + str(loss))
             if printSteps == True:
                 print("LOSS FOR REGRESSION: " + str(loss))
             if printSteps == True:
@@ -560,11 +573,11 @@ class Trainer:
         generations = 0
         if not isinstance(self.network, Network.Network):
                 raise TypeError("Network not of type Network")
-        while not self.checkConvergence() and batchIndex < len(batches):
+        while not self.checkConvergence():
             candidateFitnesses = []
             newPopulation = []
-            print("GENERATION " + str(generations))
-            print("Evaluating fitness of candidate solutions")
+            #print("GENERATION " + str(generations))
+            #print("Evaluating fitness of candidate solutions")
             totalLoss = 0
             for i in range(len(candidateSolutions)):
                 sol = candidateSolutions[i]
@@ -572,28 +585,44 @@ class Trainer:
                 candidateFitness = self.helperCalculateFitness(sol, numBatches, batches, batchIndex)
                 batchIndex += numBatches
                 candidateFitnesses.append(candidateFitness)
-                avgLoss += candidateFitness
+                totalLoss += candidateFitness
 
             avgLoss = totalLoss / len(candidateSolutions)
+            print("Average Loss: " + str(avgLoss))
             self.losses.append(avgLoss)
             
             #create new population using selection, mutation, crossover
             while len(newPopulation) < len(candidateSolutions):
                 #implement tounament selection - randomly select 10 % of the population and select the best two candidates
-                print("SELECTING PARENTS")
+                #print("\tSELECTING PARENTS")
                 tournamentSize = int(0.1 * len(candidateSolutions))
                 
                 tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
                 parentIndice = candidateFitnesses.index(min(tournament))
                 parent1 = candidateSolutions[parentIndice]
+
+                if self.printSteps == True:
+                    print("SELECTING TOURNAMENT HOLDS FITNESSES")
+                    print(tournament)
+                    print("SELECT LOWEST FITNESS VALUE")
+                    print("Parent 1")
+                    print(parent1)
+
             
                 tournament = np.array(random.sample(candidateFitnesses, tournamentSize))
                 parentIndice = candidateFitnesses.index(min(tournament))
                 parent2 = candidateSolutions[parentIndice]
+
+                if self.printSteps == True:
+                    print("SELECTING TOURNAMENT 2 HOLDS FITNESSES")
+                    print(tournament)
+                    print("SELECT LOWEST FITNESS VALUE")
+                    print("Parent 2")
+                    print(parent2)
                 
 
                 #implement crossover and mutation - randomly select a crossover point 
-                print("CROSSOVER AND MUTATION")
+                #print("\tCROSSOVER AND MUTATION")
                 if random.random() < self.geneticCrossoverRate:
                     child1, child2 = self.crossover(parent1, parent2)
                     #add children to new population
@@ -617,8 +646,6 @@ class Trainer:
 
         bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
         self.network.setWeights(candidateSolutions[bestCandidateIndex])
-        if not isinstance(self.network, Network.Network):
-            raise TypeError("Network not of type Network")
         return self.network
                 
     def crossover(self, parent1, parent2):
@@ -630,6 +657,9 @@ class Trainer:
         parent1Network.setWeights(parent1)
         parent2Network = copy.deepcopy(self.network)
         parent2Network.setWeights(parent2)
+        if self.printSteps == True:
+            print("IMPLEMENTING CROSSOVER")
+            print()
 
         #loop through each layer in the parent networks
         for i in range(len(parent1Network.getLayers())):
@@ -643,12 +673,34 @@ class Trainer:
             # Vectorized crossover
             child1Layer = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent1Layer, parent2Layer)
             child1Layer = np.where(np.arange(parent1Layer.shape[0])[:, None] <= crossoverPoint, parent2Layer, parent1Layer)
-
+            if self.printSteps == True:
+                print("CROSSOVER POINT")
+                print(crossoverPoint)
+                print("PARENT 1 LAYER")
+                print(parent1Layer)
+                print("PARENT 2 LAYER")
+                print(parent2Layer)
+                print("CHILD 1 LAYER")
+                print(child1Layer)
+                print("CHILD 2 LAYER")
+                print(child2Layer)
+                print()
             # Vectorized mutation
             mutationMask = np.random.rand(*child1Layer.shape) < self.mutationRate
             mutationValues = np.random.uniform(-1, 1, child1Layer.shape)
             child1Layer += mutationMask * mutationValues
             child2Layer += mutationMask * mutationValues
+
+            if self.printSteps == True:
+                print("MUTATION MASK")
+                print(mutationMask)
+                print("MUTATION VALUES")
+                print(mutationValues)
+                print("CHILD 1 LAYER AFTER MUTATION")
+                print(child1Layer)
+                print("CHILD 2 LAYER AFTER MUTATION")
+                print(child2Layer)
+                print()
 
             child1.append(child1Layer)
             child2.append(child2Layer)
