@@ -555,8 +555,6 @@ class Trainer:
                 candidateFitnesses.append(candidateFitness)
                 self.losses.append(candidateFitness)
             
-            if not isinstance(self.network, Network.Network):
-                raise TypeError("Network not of type Network")
             #create new population using selection, mutation, crossover
             while len(newPopulation) < len(candidateSolutions):
                 #implement tounament selection - randomly select 10 % of the population and select the best two candidates

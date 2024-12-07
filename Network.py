@@ -120,6 +120,7 @@ class Network:
             weights.append(layer.getWeights())
         return weights
     
+    #takes an matrix of weights for each layer
     def setWeights(self, weights):
         for i in range(len(self.layers)):
             self.layers[i].setWeights(weights[i])
