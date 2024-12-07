@@ -19,8 +19,7 @@ def main():
     breastCancerData = fetch_ucirepo(id=15)
     breastCancerDataFrame = pd.DataFrame(breastCancerData.data.original)
     breastCancerClean = cleaner.clean(breastCancerDataFrame, ['Sample_code_number'], 'Class')
-    breastCancerTest = breastCancerClean.sample(frac=0.5)
-    breastCancerLearner = Learner.Learner(breastCancerTest, "classification", "Class")
+    breastCancerLearner = Learner.Learner(breastCancerClean, "classification", "Class")
 
     breastCancerInfo = classificationAndAccuracyAllLayers(3, breastCancerLearner, breastCancerClean, "Breast Cancer")
 

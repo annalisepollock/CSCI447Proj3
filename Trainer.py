@@ -386,7 +386,7 @@ class Trainer:
         bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
         return population[bestCandidateIndex]
 
-    def differentialEvolution(self):
+    def differentialEvolution(self, printSteps=False):
         print("RUNNING DIFFERENTIAL EVOLUTION...")
 
         # array of networks
@@ -401,76 +401,74 @@ class Trainer:
         batchIndex = 0
 
         # randomly generate N populations
+        print("DE POPULATION SIZE: " + str(self.populationSize))
         for i in range(self.populationSize):
             # create a deep copy of the current network (all new objects + references)
             candidateSolution = self.network.getWeights()
-            candidateSolution.reInitialize() # network with new initialized weights
-            candidateSolution.printNetwork()
+            self.network.reInitialize()
+            # candidateSolution.reInitialize() # network with new initialized weights
+            # candidateSolution.printNetwork()
             population.append(candidateSolution)
 
         # TO-DO: while not converged...
         h = 0
-        while not self.checkConvergence():
-            print("DIFF EVOLUTION ROUND " + str(h))
+        while not self.checkConvergence() and batchIndex < len(batches):
             # for each solution in the population...
             for i in range(len(population)):
-                print("MUTATION ON " + str(i+1) + " CANDIDATE SOLUTION")
-                sol = population[i]
+                solWeights = population[i]
 
                 numBatches = 3
-                candidateFitness = self.helperCalculateFitness(sol, numBatches, batches, batchIndex)
+                candidateFitness = self.helperCalculateFitness(solWeights, numBatches, batches, batchIndex)
                 batchIndex += numBatches
-
-                # extract weights for each layer from the Layer objects
-                solWeights = []
-
-                for j in range(len(sol.getLayers())-1):
-                    solutionLayer = sol.getLayers()[j].getWeights()
-                    solWeights.append(solutionLayer)
 
                 # MUTATION
                 donor = []
                 # randomly select three candidate solutions that are not the current solution
                 x1, x2, x3 = random.sample([p for k, p in enumerate(population) if k != i], 3)
 
-                # perform calculation for all sets of weights (exclude output layer because it will not hold weights)
-                for j in range(len(sol.getLayers())-1):
-                    layerDonor = x1.getLayers()[j].getWeights() + self.scalingFactor*(x2.getLayers()[j].getWeights() - x3.getLayers()[j].getWeights())
+                for j in range(len(solWeights)):
+                    layerDonor = x1[j] + self.scalingFactor * (x2[j] - x3[j])
                     donor.append(layerDonor)
 
                 # CROSSOVER
+                layerCount = 0
                 offspring = []
+                layerCount = 0
                 for candidateLayer, donorLayer in zip(solWeights, donor):
                     # Check that corresponding layers have matching shapes
-                    assert candidateLayer.shape == donorLayer.shape, "Target and donor layers must have the same shape" # return error message if false
+                    assert candidateLayer.shape == donorLayer.shape, "Target and donor layers must have the same shape"  # return error message if false
 
                     # Generate random mask and combine weights
-                    binomialEval = np.random.rand(*candidateLayer.shape) <= self.crossoverProbability # is randomly generated value < alpha?
+                    binomialEval = np.random.rand(
+                        *candidateLayer.shape) <= self.crossoverProbability  # is randomly generated value < alpha?
+                    if printSteps:
+                        print("FOR EACH WEIGHT, GENERATE RANDOM VALUES BETWEEN 0 AND 1 TO EVALUATE IF <= PROBABILITY: ")
+                        print(binomialEval)
                     offspringLayer = np.where(binomialEval, candidateLayer, donorLayer)
                     offspring.append(offspringLayer)
+                    layerCount += 1
 
-                # create a network with the calculated offspring weights + biases
-                offspringSolution = copy.deepcopy(self.network)
-                offspringLayers = offspringSolution.getLayers()
-                for i in range(len(offspringLayers)-1):
-                    offspringLayers[i].setWeights(offspring[i])
+                if printSteps:
+                    print("OFFSPRING VECTOR: ")
+                    print(offspring)
+
+                self.network.setWeights(offspring)
 
                 # calculate fitness of offspring, determine if it is better than current candidate
-                offspringFitness = self.helperCalculateFitness(offspringSolution, numBatches, batches, batchIndex)
+                offspringFitness = self.helperCalculateFitness(offspring, numBatches, batches, batchIndex)
                 batchIndex += numBatches
 
                 # SELECTION
                 if offspringFitness < candidateFitness:
-                    population[i] = offspringSolution
+                    population[i] = offspring
                     self.losses.append(offspringFitness)
                 else:
                     self.losses.append(candidateFitness)
 
-                h += 1
+            h += 1
 
         # RETURN BEST INDIVIDUAL CANDIDATE SOLUTION
         candidateFitnessValues = []
-        bestCandidateIndex = 0
         for candidate in population:
             numBatches = 3
             # calculate fitness of offspring, determine if it is better than current candidate
@@ -478,7 +476,9 @@ class Trainer:
             candidateFitnessValues.append(candidateFitness)
 
         bestCandidateIndex = candidateFitnessValues.index(min(candidateFitnessValues))
-        return population[bestCandidateIndex]
+
+        self.network.setWeights(population[bestCandidateIndex])
+        return self.network
 
     def helperCalculateFitness(self, solution, numBatches, batches, batchIndex):
         # calculate loss numBatches times and return the average

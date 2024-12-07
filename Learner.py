@@ -8,7 +8,7 @@ from ClassificationInfo import Accuracy
 
 class Learner: 
 
-    def __init__ (self, data, classificationType, classPlace, algorithm="swarmOptimization"):
+    def __init__ (self, data, classificationType, classPlace, algorithm="differentialEvolution"):
         # convergence testing
         self.patience = 2
         self.windowSize = 1
@@ -242,44 +242,57 @@ class Learner:
                 bestMutation = mutation
             foldIndex += 1
         self.mutationRate = bestMutation
-            
+
     def tuneDifferentialEvolution(self):
+        print("TUNE DIFFERENTIAL EVOLUTION")
         foldIndex = 0
         accuracy = 0
 
-        #TUNE SCALING FACTOR
+        # TUNE SCALING FACTOR
         bestScalingFactor = 0
-        scalingFactorValues = np.linspace(0, 2, 10)
-        #test accuracy of each value
+        scalingFactorValues = np.linspace(0, 2, 5)
+        # test accuracy of each value
         for val in scalingFactorValues:
             fold = self.folds[foldIndex % len(self.folds)]
             self.scalingFactor = val
-            scalingFactorTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            scalingFactorTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum,
+                                                   self.batchSize, self.classificationType, self.classPlace,
+                                                   self.data.drop(fold.index), self.populationSize, self.crossoverRate,
+                                                   self.mutationRate, self.binomialCrossoverProb, self.scalingFactor,
+                                                   self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
             self.network = scalingFactorTrainer.train()
             output = self.test(self.testData)
-            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
-            if(foldAccuracy > accuracy):
+            foldAccuracy = (output.getTP() + output.getTN()) / (
+                        output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if (foldAccuracy > accuracy):
                 accuracy = foldAccuracy
                 bestScalingFactor = val
             foldIndex += 1
         self.scalingFactor = bestScalingFactor
-        #TUNE BINOMIAL CROSSOVER PROBABILITY
-        accuracy = 0 # reset accuracy measure
+        # TUNE BINOMIAL CROSSOVER PROBABILITY
+        accuracy = 0  # reset accuracy measure
         bestProbability = 0
-        probabilityValues = np.linspace(0, 1, 10)
+        probabilityValues = np.linspace(0, 1, 6)
         # test accuracy of each value
         for val in probabilityValues:
             fold = self.folds[foldIndex % len(self.folds)]
             self.binomialCrossoverProb = val
-            scalingFactorTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum, self.batchSize,self.classificationType, self.classPlace, self.data.drop(fold.index), self.populationSize, self.crossoverRate, self.mutationRate, self.binomialCrossoverProb, self.scalingFactor, self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
+            scalingFactorTrainer = Trainer.Trainer(self.algorithm, self, self.network, self.learningRate, self.momentum,
+                                                   self.batchSize, self.classificationType, self.classPlace,
+                                                   self.data.drop(fold.index), self.populationSize, self.crossoverRate,
+                                                   self.mutationRate, self.binomialCrossoverProb, self.scalingFactor,
+                                                   self.inertia, self.cognitiveUpdateRate, self.socialUpdateRate)
             self.network = scalingFactorTrainer.train()
             output = self.test(self.testData)
-            foldAccuracy = (output.getTP() + output.getTN()) / (output.getTP() + output.getTN() + output.getFP() + output.getFN())
-            if(foldAccuracy > accuracy):
+            foldAccuracy = (output.getTP() + output.getTN()) / (
+                        output.getTP() + output.getTN() + output.getFP() + output.getFN())
+            if (foldAccuracy > accuracy):
                 accuracy = foldAccuracy
                 bestProbability = val
             foldIndex += 1
         self.binomialCrossoverProb = bestProbability
+        print("SCALING FACTOR: " + str(self.scalingFactor) + ", CROSSOVER PROBABILITY: " + str(
+            self.binomialCrossoverProb))
 
     def tuneParticleSwarm(self):
         #TUNE INERTIA
