@@ -2,7 +2,7 @@ import numpy as np
 from Network import LayerName
 
 class Layer:
-    def __init__ (self, size, nextSize, name, batchSize, classes = [], classificationType=""):
+    def __init__ (self, size, nextSize, name, batchSize, classes = [], classificationType="geneticAlgorithm"):
         size = int(size)
         nextSize = int(nextSize)
         batchSize = int(batchSize)

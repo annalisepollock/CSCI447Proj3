@@ -48,17 +48,6 @@ class Network:
     def reInitialize(self):
         self.__init__(self.hiddenLayers, self.neuronsPerLayer, self.inputSize, self.outputSize, self.classificationType, self.batchSize, self.classes)
 
-    def checkConvergence(self, tolerance=0):
-        for layer in self.layers:
-            difference = np.linalg.norm(layer.weights - layer.prevWeights) # neg/pos doesn't matter
-
-            # tolerance default = 0 -> no difference permitted to be considered convergence
-            # other options: 0.00005, 0.00003, 0.00008, 0.00001, etc.
-            if np.all(difference < tolerance): # if all weight values have changed within tolerance permitted...
-                return True # converged
-            else:
-                return False # not converged
-
     def setHiddenLayers(self, hiddenLayers):
         self.hiddenLayers = hiddenLayers
     

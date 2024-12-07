@@ -27,7 +27,7 @@ class Trainer:
                  socialComponent,
                  ):
         # attributes used for convergence
-        self.patience = 2
+        self.patience = 1
         self.windowSize = 1
         self.tolerance = 1e-1
         self.learner = learner
@@ -80,7 +80,7 @@ class Trainer:
             targetRange = self.trainData[self.classPlace].max() - self.trainData[self.classPlace].min()
             self.tolerance = max(self.tolerance * targetRange, 1e-5) # scale tolerance to range of target values
         else: # classification
-            self.windowSize = 1
+            self.windowSize = 3
 
         if len(self.losses) < self.windowSize*2:
             if printSteps == True:
@@ -565,13 +565,17 @@ class Trainer:
             newPopulation = []
             print("GENERATION " + str(generations))
             print("Evaluating fitness of candidate solutions")
+            totalLoss = 0
             for i in range(len(candidateSolutions)):
                 sol = candidateSolutions[i]
                 numBatches = 1
                 candidateFitness = self.helperCalculateFitness(sol, numBatches, batches, batchIndex)
                 batchIndex += numBatches
                 candidateFitnesses.append(candidateFitness)
-                self.losses.append(candidateFitness)
+                avgLoss += candidateFitness
+
+            avgLoss = totalLoss / len(candidateSolutions)
+            self.losses.append(avgLoss)
             
             #create new population using selection, mutation, crossover
             while len(newPopulation) < len(candidateSolutions):
